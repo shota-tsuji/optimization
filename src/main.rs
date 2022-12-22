@@ -11,24 +11,28 @@ fn main() {
 /// * `a` - Matrix A.
 /// * `x` - Vector x.
 /// * `b` - Vector b.
-fn jacobi(a: ArrayView2<f64>, x: Vec<f64>, b: Vec<f64>, eps: f64) -> Vec<f64> {
-    let mut x = x;
+fn jacobi(a: ArrayView2<f64>, x_0: Vec<f64>, b: Vec<f64>, eps: f64) -> Vec<f64> {
+    let mut x_k1 = x_0;
     let mut n = 0;
+    let mut y = x_k1.clone();
     loop {
-        let y = x.clone();
-        for i in 0..x.len() {
+        //let y = x.clone();
+        for i in 0..x_k1.len() {
             let mut xi = b[i];
             for j in 0..y.len() {
                 if j != i {
                     xi -= a[[i, j]] * y[j];
                 }
             }
-            x[i] = xi / a[[i, i]];
+            x_k1[i] = xi / a[[i, i]];
         }
-        println!("{}: {:?}", n, x);
 
-        if is_convergent(&x, &y, eps) {
-            return x;
+        if is_convergent(&x_k1, &y, eps) {
+            return x_k1;
+        }
+
+        for i in 0..y.len() {
+            y[i] = x_k1[i];
         }
         n += 1;
     }
