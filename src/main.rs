@@ -18,14 +18,14 @@ fn jacobi(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
         let y = x;
         for i in 0..x.len() {
             let mut xi = b[i];
-            for (j, &y) in y.iter().enumerate() {
+            for j in 0..y.len() {
                 if j != i {
-                    xi -= a[i][j] * y;
+                    xi -= a[i][j] * y[j];
                 }
             }
             x[i] = xi / a[i][i];
         }
-        println!("{}: {}, {}, {}", n, x[0], x[1], x[2]);
+        println!("{}: {:?}", n, x);
 
         let mut flag = true;
         for i in 0..x.len() {
