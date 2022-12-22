@@ -125,9 +125,4 @@ mod tests {
         assert_eq!(0.0, a.signum() * a.abs());
     }
 
-    #[test]
-    fn increase_h() {
-        let (h, _, x_) = next_set(F_1, -3.0, 0.1);
-        assert_eq!((-1.5, 1.6), increase_x(f, x_, h));
-    }
 }
