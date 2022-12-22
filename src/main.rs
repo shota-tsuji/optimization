@@ -11,8 +11,8 @@ fn main() {
 /// * `a` - Matrix A.
 /// * `x` - Vector x.
 /// * `b` - Vector b.
-fn jacobi(a: ArrayView2<f64>, x_0: Vec<f64>, b: Vec<f64>, eps: f64) -> Vec<f64> {
-    let mut x_k1 = x_0;
+fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec<f64> {
+    let mut x_k1 = x_0.clone();
     let mut n = 0;
     let mut y = x_k1.clone();
     loop {
@@ -119,10 +119,8 @@ mod tests {
         let eps = 1e-6;
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
-        let x = vec![0.0, 0.0, 0.0];
-        let x_k = jacobi(a.view(), x, b, eps);
-        let ans = vec![-1.0, 1.0, 2.0];
-        assert!(is_convergent(&ans, &x_k, eps));
+        let x_0 = vec![0.0, 0.0, 0.0];
+        assert!(is_convergent(&vec![-1.0, 1.0, 2.0], &jacobi(a.view(), &x_0, &b, eps), eps));
     }
 
     #[test]
@@ -131,9 +129,7 @@ mod tests {
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
         let x_0 = vec![0.0, 0.0, 0.0];
-        let x_k = jacobi(a.view(), x_0, b, eps);
-        let ans = vec![-1.0, 1.0, 2.0];
-        assert!(is_convergent(&ans, &x_k, eps));
+        assert!(is_convergent(&vec![-1.0, 1.0, 2.0], &jacobi(a.view(), &x_0, &b, eps), eps));
     }
 
     #[test]
@@ -142,9 +138,7 @@ mod tests {
         let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
         let b = vec![13.0, 8.0];
         let x_0 = vec![0.0, 0.0];
-        let x_k = jacobi(a.view(), x_0, b, eps);
-        let ans = vec![1.0, 2.0];
-        assert!(is_convergent(&ans, &x_k, eps));
+        assert!(is_convergent(&vec![1.0, 2.0], &jacobi(a.view(), &x_0, &b, eps), eps));
     }
 
     #[test]
