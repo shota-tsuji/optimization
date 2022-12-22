@@ -21,8 +21,8 @@ fn calc(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
         println!("{}: {}, {}, {}", n, x[0], x[1], x[2]);
 
         let mut flag = true;
-        for (x, y) in zip(x, y) {
-            if (x - y).abs() > eps {
+        for i in 0..x.len() {
+            if (x[i] - y[i]).abs() > eps {
                 flag = false;
             }
         }
@@ -76,6 +76,18 @@ mod tests {
         let ans = [-1.0, 1.0, 2.0];
         assert!(zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps)
         , "x = [{:?}]", xk);
+    }
+
+    #[test]
+    fn calc2() {
+        let eps = 1e-10;
+        let a = [[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]];
+        let b = [0.0, 4.0, 6.0];
+        let x = [0.0, 0.0, 0.0];
+        let xk = calc(a, x, b, eps);
+        let ans = [-1.0, 1.0, 2.0];
+        assert!(zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps)
+                , "x = [{:?}]", xk);
     }
 
     #[test]
