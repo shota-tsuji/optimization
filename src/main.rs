@@ -1,4 +1,4 @@
-use ndarray::{Array2, ArrayView2};
+use ndarray::{Array1, ArrayView1, ArrayView2};
 
 fn main() {
     println!("Hello, world!");
@@ -11,11 +11,11 @@ fn main() {
 /// * `a` - Matrix A.
 /// * `x` - Vector x.
 /// * `b` - Vector b.
-fn jacobi(a: ArrayView2<f64>, x: [f64; 3], b: [f64; 3], eps: f64) -> [f64; 3] {
+fn jacobi(a: ArrayView2<f64>, x: Vec<f64>, b: [f64; 3], eps: f64) -> Vec<f64> {
     let mut x = x;
     let mut n = 0;
     loop {
-        let y = x;
+        let y = x.clone();
         for i in 0..x.len() {
             let mut xi = b[i];
             for j in 0..y.len() {
@@ -68,7 +68,7 @@ fn increase_x(f: fn(f64) -> f64, x_: f64, step: f64) -> (f64, f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::arr2;
+    use ndarray::{arr1, arr2};
     use std::iter::zip;
 
     const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
@@ -76,14 +76,13 @@ mod tests {
     #[test]
     fn calc1() {
         let eps = 1e-6;
-        println!("{}", eps);
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = [0.0, 4.0, 6.0];
-        let x = [0.0, 0.0, 0.0];
+        let x = vec![0.0, 0.0, 0.0];
         let xk = jacobi(a.view(), x, b, eps);
         let ans = [-1.0, 1.0, 2.0];
         assert!(
-            zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps),
+            zip(&xk, ans).all(|(&x_i, ans_i)| (ans_i - x_i).abs() < eps),
             "x = [{:?}]",
             xk
         );
@@ -94,11 +93,11 @@ mod tests {
         let eps = 1e-10;
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = [0.0, 4.0, 6.0];
-        let x = [0.0, 0.0, 0.0];
+        let x = vec![0.0, 0.0, 0.0];
         let xk = jacobi(a.view(), x, b, eps);
         let ans = [-1.0, 1.0, 2.0];
         assert!(
-            zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps),
+            zip(&xk, ans).all(|(&x_i, ans_i)| (ans_i - x_i).abs() < eps),
             "x = [{:?}]",
             xk
         );
