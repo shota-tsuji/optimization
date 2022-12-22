@@ -1,10 +1,17 @@
-use std::iter::zip;
+
 
 fn main() {
     println!("Hello, world!");
 }
 
-fn calc(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
+/// Jacobi method
+///
+/// returns solution vector for Ax = b.
+///
+/// * `a` - Matrix A.
+/// * `x` - Vector x.
+/// * `b` - Vector b.
+fn jacobi(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
     let mut x = x;
     let mut n = 0;
     loop {
@@ -72,7 +79,7 @@ mod tests {
         let a = [[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]];
         let b = [0.0, 4.0, 6.0];
         let x = [0.0, 0.0, 0.0];
-        let xk = calc(a, x, b, eps);
+        let xk = jacobi(a, x, b, eps);
         let ans = [-1.0, 1.0, 2.0];
         assert!(zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps)
         , "x = [{:?}]", xk);
@@ -84,7 +91,7 @@ mod tests {
         let a = [[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]];
         let b = [0.0, 4.0, 6.0];
         let x = [0.0, 0.0, 0.0];
-        let xk = calc(a, x, b, eps);
+        let xk = jacobi(a, x, b, eps);
         let ans = [-1.0, 1.0, 2.0];
         assert!(zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps)
                 , "x = [{:?}]", xk);
