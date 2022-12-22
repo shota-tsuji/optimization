@@ -110,7 +110,7 @@ fn is_convergent(x_k1: &Vec<f64>, x_k_: &Vec<f64>, eps: f64) -> bool {
 mod tests {
     use super::*;
     use ndarray::arr2;
-    use std::iter::zip;
+    
 
     const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
 
@@ -120,7 +120,11 @@ mod tests {
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
         let x_0 = vec![0.0, 0.0, 0.0];
-        assert!(is_convergent(&vec![-1.0, 1.0, 2.0], &jacobi(a.view(), &x_0, &b, eps), eps));
+        assert!(is_convergent(
+            &vec![-1.0, 1.0, 2.0],
+            &jacobi(a.view(), &x_0, &b, eps),
+            eps
+        ));
     }
 
     #[test]
@@ -129,7 +133,11 @@ mod tests {
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
         let x_0 = vec![0.0, 0.0, 0.0];
-        assert!(is_convergent(&vec![-1.0, 1.0, 2.0], &jacobi(a.view(), &x_0, &b, eps), eps));
+        assert!(is_convergent(
+            &vec![-1.0, 1.0, 2.0],
+            &jacobi(a.view(), &x_0, &b, eps),
+            eps
+        ));
     }
 
     #[test]
@@ -138,7 +146,11 @@ mod tests {
         let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
         let b = vec![13.0, 8.0];
         let x_0 = vec![0.0, 0.0];
-        assert!(is_convergent(&vec![1.0, 2.0], &jacobi(a.view(), &x_0, &b, eps), eps));
+        assert!(is_convergent(
+            &vec![1.0, 2.0],
+            &jacobi(a.view(), &x_0, &b, eps),
+            eps
+        ));
     }
 
     #[test]
