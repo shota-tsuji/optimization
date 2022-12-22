@@ -110,33 +110,25 @@ mod tests {
     }
 
     #[test]
-    fn calc1() {
+    fn jacobi_3x3_eps6() {
         let eps = 1e-6;
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
         let x = vec![0.0, 0.0, 0.0];
-        let xk = jacobi(a.view(), x, b, eps);
-        let ans = [-1.0, 1.0, 2.0];
-        assert!(
-            zip(&xk, ans).all(|(&x_i, ans_i)| (ans_i - x_i).abs() < eps),
-            "x = [{:?}]",
-            xk
-        );
+        let x_k = jacobi(a.view(), x, b, eps);
+        let ans = vec![-1.0, 1.0, 2.0];
+        assert!(is_convergent(ans, x_k, eps));
     }
 
     #[test]
-    fn calc2() {
+    fn jacobi_3x3_eps10() {
         let eps = 1e-10;
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
-        let x = vec![0.0, 0.0, 0.0];
-        let xk = jacobi(a.view(), x, b, eps);
-        let ans = [-1.0, 1.0, 2.0];
-        assert!(
-            zip(&xk, ans).all(|(&x_i, ans_i)| (ans_i - x_i).abs() < eps),
-            "x = [{:?}]",
-            xk
-        );
+        let x_0 = vec![0.0, 0.0, 0.0];
+        let x_k = jacobi(a.view(), x_0, b, eps);
+        let ans = vec![-1.0, 1.0, 2.0];
+        assert!(is_convergent(ans, x_k, eps));
     }
 
     #[test]
