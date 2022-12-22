@@ -27,13 +27,7 @@ fn jacobi(a: ArrayView2<f64>, x: Vec<f64>, b: Vec<f64>, eps: f64) -> Vec<f64> {
         }
         println!("{}: {:?}", n, x);
 
-        let mut flag = true;
-        for i in 0..x.len() {
-            if (x[i] - y[i]).abs() > eps {
-                flag = false;
-            }
-        }
-        if flag {
+        if is_convergent(&x, &y, eps) {
             return x;
         }
         n += 1;
@@ -83,6 +77,31 @@ fn increase_x(f: fn(f64) -> f64, x_: f64, step: f64) -> (f64, f64) {
     return (x_ - h, h / 2.0);
 }
 
+/// check whether convergent
+///
+/// returns true if satisfy convergence, otherwise returns false.
+///
+/// * `x_k1` - Vector x^(k+1).
+/// * `x_k_` - Vector x^(k).
+/// * `eps` - epsilon (error).
+fn is_convergent(x_k1: &Vec<f64>, x_k_: &Vec<f64>, eps: f64) -> bool {
+    let mut delta_sum = 0.0;
+    for i in 0..x_k1.len() {
+        delta_sum += (x_k1[i] - x_k_[i]).abs();
+    }
+
+    let mut ans_sum = 0.0;
+    for i in 0..x_k1.len() {
+        ans_sum += x_k1[i].abs();
+    }
+
+    if delta_sum < eps * ans_sum {
+        true
+    } else {
+        false
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,24 +109,6 @@ mod tests {
     use std::iter::zip;
 
     const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
-
-    fn is_convergent(ans: Vec<f64>, x_k: Vec<f64>, eps: f64) -> bool {
-        let mut delta_sum = 0.0;
-        for i in 0..ans.len() {
-            delta_sum += (ans[i] - x_k[i]).abs();
-        }
-
-        let mut ans_sum = 0.0;
-        for i in 0..ans.len() {
-            ans_sum += ans[i].abs();
-        }
-
-        if delta_sum < eps * ans_sum {
-            true
-        } else {
-            false
-        }
-    }
 
     #[test]
     fn jacobi_3x3_eps6() {
@@ -117,7 +118,7 @@ mod tests {
         let x = vec![0.0, 0.0, 0.0];
         let x_k = jacobi(a.view(), x, b, eps);
         let ans = vec![-1.0, 1.0, 2.0];
-        assert!(is_convergent(ans, x_k, eps));
+        assert!(is_convergent(&ans, &x_k, eps));
     }
 
     #[test]
@@ -128,7 +129,7 @@ mod tests {
         let x_0 = vec![0.0, 0.0, 0.0];
         let x_k = jacobi(a.view(), x_0, b, eps);
         let ans = vec![-1.0, 1.0, 2.0];
-        assert!(is_convergent(ans, x_k, eps));
+        assert!(is_convergent(&ans, &x_k, eps));
     }
 
     #[test]
@@ -139,7 +140,7 @@ mod tests {
         let x_0 = vec![0.0, 0.0];
         let x_k = jacobi(a.view(), x_0, b, eps);
         let ans = vec![1.0, 2.0];
-        assert!(is_convergent(ans, x_k, eps));
+        assert!(is_convergent(&ans, &x_k, eps));
     }
 
     #[test]
