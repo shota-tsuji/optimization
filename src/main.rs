@@ -91,6 +91,24 @@ mod tests {
 
     const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
 
+    fn is_convergent(ans: Vec<f64>, x_k: Vec<f64>, eps: f64) -> bool {
+        let mut delta_sum = 0.0;
+        for i in 0..ans.len() {
+            delta_sum += (ans[i] - x_k[i]).abs();
+        }
+
+        let mut ans_sum = 0.0;
+        for i in 0..ans.len() {
+            ans_sum += ans[i].abs();
+        }
+
+        if delta_sum < eps * ans_sum {
+            true
+        } else {
+            false
+        }
+    }
+
     #[test]
     fn calc1() {
         let eps = 1e-6;
@@ -119,6 +137,17 @@ mod tests {
             "x = [{:?}]",
             xk
         );
+    }
+
+    #[test]
+    fn jacobi_2x2() {
+        let eps = 1e-10;
+        let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
+        let b = vec![13.0, 8.0];
+        let x_0 = vec![0.0, 0.0];
+        let x_k = jacobi(a.view(), x_0, b, eps);
+        let ans = vec![1.0, 2.0];
+        assert!(is_convergent(ans, x_k, eps));
     }
 
     #[test]
