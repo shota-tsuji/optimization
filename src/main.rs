@@ -1,4 +1,4 @@
-
+use ndarray::{Array2, ArrayView2};
 
 fn main() {
     println!("Hello, world!");
@@ -11,7 +11,7 @@ fn main() {
 /// * `a` - Matrix A.
 /// * `x` - Vector x.
 /// * `b` - Vector b.
-fn jacobi(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
+fn jacobi(a: ArrayView2<f64>, x: [f64; 3], b: [f64; 3], eps: f64) -> [f64; 3] {
     let mut x = x;
     let mut n = 0;
     loop {
@@ -20,10 +20,10 @@ fn jacobi(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
             let mut xi = b[i];
             for j in 0..y.len() {
                 if j != i {
-                    xi -= a[i][j] * y[j];
+                    xi -= a[[i, j]] * y[j];
                 }
             }
-            x[i] = xi / a[i][i];
+            x[i] = xi / a[[i, i]];
         }
         println!("{}: {:?}", n, x);
 
@@ -41,7 +41,7 @@ fn jacobi(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
 }
 
 fn f(x: f64) -> f64 {
-    return - x * x;
+    return -x * x;
 }
 
 fn next_set(f_1: fn(f64) -> f64, x: f64, h: f64) -> (f64, f64, f64) {
@@ -67,8 +67,9 @@ fn increase_x(f: fn(f64) -> f64, x_: f64, step: f64) -> (f64, f64) {
 
 #[cfg(test)]
 mod tests {
-    use std::iter::zip;
     use super::*;
+    use ndarray::arr2;
+    use std::iter::zip;
 
     const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
 
@@ -76,66 +77,73 @@ mod tests {
     fn calc1() {
         let eps = 1e-6;
         println!("{}", eps);
-        let a = [[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]];
+        let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = [0.0, 4.0, 6.0];
         let x = [0.0, 0.0, 0.0];
-        let xk = jacobi(a, x, b, eps);
+        let xk = jacobi(a.view(), x, b, eps);
         let ans = [-1.0, 1.0, 2.0];
-        assert!(zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps)
-        , "x = [{:?}]", xk);
+        assert!(
+            zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps),
+            "x = [{:?}]",
+            xk
+        );
     }
 
     #[test]
     fn calc2() {
         let eps = 1e-10;
-        let a = [[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]];
+        let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = [0.0, 4.0, 6.0];
         let x = [0.0, 0.0, 0.0];
-        let xk = jacobi(a, x, b, eps);
+        let xk = jacobi(a.view(), x, b, eps);
         let ans = [-1.0, 1.0, 2.0];
-        assert!(zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps)
-                , "x = [{:?}]", xk);
+        assert!(
+            zip(xk, ans).all(|(x_i, ans_i)| (ans_i - x_i).abs() < eps),
+            "x = [{:?}]",
+            xk
+        );
     }
 
     #[test]
     fn return_pulus_set() {
         let h = 0.1;
         let x = -3.0;
-        assert_eq!((h, x, x+h), next_set(F_1, x, h));
+        assert_eq!((h, x, x + h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_pulus_set2() {
         let h = 0.2;
         let x = -3.0;
-        assert_eq!((h, x, x+h), next_set(F_1, x, h));
+        assert_eq!((h, x, x + h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_x_plus() {
         let h = 0.2;
         let x = -1.1;
-        assert_eq!((h, x, x+h), next_set(F_1, x, h));
+        assert_eq!((h, x, x + h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_minus_set() {
         let h = 0.1;
-        let x = 3.0;assert_eq!((-h, x, x-h), next_set(F_1, x, h));
+        let x = 3.0;
+        assert_eq!((-h, x, x - h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_x_minus() {
         let h = 0.1;
         let x = 1.1;
-        assert_eq!((-h, x, x-h), next_set(F_1, x, h));
+        assert_eq!((-h, x, x - h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_x_set2() {
         let h = 0.2;
         let x = 1.1;
-        assert_eq!((-h, x, x-h), next_set(F_1, x, h));
+        assert_eq!((-h, x, x - h), next_set(F_1, x, h));
     }
 
     #[test]
@@ -143,5 +151,4 @@ mod tests {
         let a: f64 = -0.0;
         assert_eq!(0.0, a.signum() * a.abs());
     }
-
 }
