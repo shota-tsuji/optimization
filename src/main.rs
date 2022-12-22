@@ -1,4 +1,4 @@
-use ndarray::{ArrayView2};
+use ndarray::ArrayView2;
 
 fn main() {
     println!("Hello, world!");
@@ -86,7 +86,7 @@ fn increase_x(f: fn(f64) -> f64, x_: f64, step: f64) -> (f64, f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::{arr2};
+    use ndarray::arr2;
     use std::iter::zip;
 
     const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
