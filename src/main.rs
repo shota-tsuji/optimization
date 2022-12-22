@@ -8,7 +8,7 @@ fn calc(a: [[f64;3];3], x: [f64;3], b: [f64;3], eps: f64) -> [f64;3] {
     let mut x = x;
     let mut n = 0;
     loop {
-        let mut y = x;
+        let y = x;
         for i in 0..x.len() {
             let mut xi = b[i];
             for (j, &y) in y.iter().enumerate() {
@@ -80,42 +80,42 @@ mod tests {
 
     #[test]
     fn return_pulus_set() {
-        let mut h = 0.1;
-        let mut x = -3.0;
+        let h = 0.1;
+        let x = -3.0;
         assert_eq!((h, x, x+h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_pulus_set2() {
-        let mut h = 0.2;
-        let mut x = -3.0;
+        let h = 0.2;
+        let x = -3.0;
         assert_eq!((h, x, x+h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_x_plus() {
-        let mut h = 0.2;
-        let mut x = -1.1;
+        let h = 0.2;
+        let x = -1.1;
         assert_eq!((h, x, x+h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_minus_set() {
-        let mut h = 0.1;
-        let mut x = 3.0;assert_eq!((-h, x, x-h), next_set(F_1, x, h));
+        let h = 0.1;
+        let x = 3.0;assert_eq!((-h, x, x-h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_x_minus() {
-        let mut h = 0.1;
-        let mut x = 1.1;
+        let h = 0.1;
+        let x = 1.1;
         assert_eq!((-h, x, x-h), next_set(F_1, x, h));
     }
 
     #[test]
     fn return_x_set2() {
-        let mut h = 0.2;
-        let mut x = 1.1;
+        let h = 0.2;
+        let x = 1.1;
         assert_eq!((-h, x, x-h), next_set(F_1, x, h));
     }
 
