@@ -13,7 +13,6 @@ fn main() {
 /// * `b` - Vector b.
 fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec<f64> {
     let mut x_k1 = x_0.clone();
-    let mut n = 0;
     let mut y = x_k1.clone();
     loop {
         //let y = x.clone();
@@ -34,7 +33,6 @@ fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec<f64
         for i in 0..y.len() {
             y[i] = x_k1[i];
         }
-        n += 1;
     }
 }
 
@@ -56,29 +54,9 @@ fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
     true
 }
 
-fn f(x: f64) -> f64 {
-    return -x * x;
-}
-
 fn next_set(f_1: fn(f64) -> f64, x: f64, h: f64) -> (f64, f64, f64) {
     let h = f_1(x).signum() * h.abs();
     (h, x, x + h)
-}
-
-fn increase_x(f: fn(f64) -> f64, x_: f64, step: f64) -> (f64, f64) {
-    let mut h = step;
-    let mut x;
-    let mut x_ = x_;
-    loop {
-        h = 2.0 * h;
-        x = x_;
-        x_ = x + h;
-        println!("x = {}", x);
-        if f(x) >= f(x_) {
-            break;
-        }
-    }
-    return (x_ - h, h / 2.0);
 }
 
 /// check whether convergent
