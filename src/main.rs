@@ -40,6 +40,24 @@ fn jacobi(a: ArrayView2<f64>, x: Vec<f64>, b: Vec<f64>, eps: f64) -> Vec<f64> {
     }
 }
 
+fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
+    for i in 0..a.shape()[0] {
+        let a_ii = a[[i, i]];
+        let mut non_diagonals = 0.0;
+        for j in 0..a.shape()[1] {
+            if j != i {
+                non_diagonals += a[[i, j]].abs();
+            }
+        }
+
+        if a_ii.abs() <= non_diagonals {
+            return false;
+        }
+    }
+
+    true
+}
+
 fn f(x: f64) -> f64 {
     return -x * x;
 }
@@ -101,6 +119,24 @@ mod tests {
             "x = [{:?}]",
             xk
         );
+    }
+
+    #[test]
+    fn diagonally_dominant_2x2() {
+        let a = arr2(&[[3.0, -2.0], [1.0, -3.0]]);
+        assert!(is_diagonally_dominant(a.view()));
+    }
+
+    #[test]
+    fn not_diagonally_dominant_2x2() {
+        let a = arr2(&[[0.0, 1.0], [0.0, 1.0]]);
+        assert!(!is_diagonally_dominant(a.view()));
+    }
+
+    #[test]
+    fn diagonally_dominant_3x3() {
+        let a = arr2(&[[3.0, -1.0, 1.0], [1.0, -3.0, 1.0], [-1.0, 2.0, 4.0]]);
+        assert!(is_diagonally_dominant(a.view()));
     }
 
     #[test]
