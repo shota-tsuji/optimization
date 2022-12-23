@@ -1,9 +1,5 @@
 use ndarray::ArrayView2;
 
-fn main() {
-    println!("Hello, world!");
-}
-
 /// Jacobi method
 ///
 /// returns solution vector for Ax = b.
@@ -11,7 +7,7 @@ fn main() {
 /// * `a` - Matrix A.
 /// * `x` - Vector x.
 /// * `b` - Vector b.
-fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec<f64> {
+pub fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec<f64> {
     let mut x_k1 = x_0.clone();
     let mut y = x_k1.clone();
     loop {
@@ -36,7 +32,7 @@ fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec<f64
     }
 }
 
-fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
+pub fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
     for i in 0..a.shape()[0] {
         let a_ii = a[[i, i]];
         let mut non_diagonals = 0.0;
@@ -54,7 +50,7 @@ fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
     true
 }
 
-fn next_set(f_1: fn(f64) -> f64, x: f64, h: f64) -> (f64, f64, f64) {
+pub fn next_set(f_1: fn(f64) -> f64, x: f64, h: f64) -> (f64, f64, f64) {
     let h = f_1(x).signum() * h.abs();
     (h, x, x + h)
 }
@@ -88,7 +84,6 @@ fn is_convergent(x_k1: &Vec<f64>, x_k_: &Vec<f64>, eps: f64) -> bool {
 mod tests {
     use super::*;
     use ndarray::arr2;
-    
 
     const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
 
