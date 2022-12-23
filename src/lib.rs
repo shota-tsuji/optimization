@@ -64,6 +64,26 @@ pub fn gauss_seidel(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) 
     }
 }
 
+/// LU decomposition
+///
+/// Decompose matrix A into LU.
+///
+/// * `a` - Matrix A
+pub fn lu_decompose(a: ArrayView2<f64>) -> Array2<f64> {
+    let mut a = a.to_owned();
+    for i in 0..a.shape()[0] {
+        let uii = a[[i, i]];
+        for j in i + 1..a.shape()[0] {
+            let l_ij = a[[j, i]] / uii;
+            a[[j, i]] = l_ij;
+            for k in i + 1..a.shape()[1] {
+                a[[j, k]] -= l_ij * a[[i, k]];
+            }
+        }
+    }
+    a
+}
+
 pub fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
     for i in 0..a.shape()[0] {
         let a_ii = a[[i, i]];
@@ -168,11 +188,12 @@ mod tests {
         let b = vec![13.0, 8.0];
         let x_0 = vec![0.0, 0.0];
         let x_k = &gauss_seidel(a.view(), &x_0, &b, eps);
-        assert!(is_convergent(
-            &vec![1.0, 2.0],
-            x_k,
-            eps
-        ), "eps={}, x={:?}", eps, x_k);
+        assert!(
+            is_convergent(&vec![1.0, 2.0], x_k, eps),
+            "eps={}, x={:?}",
+            eps,
+            x_k
+        );
     }
 
     #[test]
@@ -182,11 +203,46 @@ mod tests {
         let b = vec![0.0, 4.0, 6.0];
         let x_0 = vec![0.0, 0.0, 0.0];
         let x_k = &gauss_seidel(a.view(), &x_0, &b, eps);
-        assert!(is_convergent(
-            &vec![-1.0, 1.0, 2.0],
-            x_k,
-            eps
-        ), "eps={}, x={:?}", eps, x_k);
+        assert!(
+            is_convergent(&vec![-1.0, 1.0, 2.0], x_k, eps),
+            "eps={}, x={:?}",
+            eps,
+            x_k
+        );
+    }
+
+    #[test]
+    fn lu_decompose_2x2_unchanged() {
+        let eps = 1e-10;
+        let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
+        let b = vec![13.0, 8.0];
+        assert_eq!(a, compose_a(lu_decompose(a.view())));
+    }
+
+    #[test]
+    fn lu_decompose_2x2_row_changed() {
+        let eps = 1e-10;
+        let a = arr2(&[[2.0, 3.0], [5.0, 4.0]]);
+        let b = vec![8.0, 13.0];
+        assert_eq!(a, compose_a(lu_decompose(a.view())));
+    }
+
+    fn compose_a(lu: Array2<f64>) -> Array2<f64> {
+        let mut l = Array2::eye(2);
+        for i in 1..l.shape()[0] {
+            for j in 0..i {
+                l[[i, j]] = lu[[i, j]];
+            }
+        }
+
+        let mut u = Array2::zeros((2, 2));
+        for i in 0..u.shape()[0] {
+            for j in i..u.shape()[1] {
+                u[[i, j]] = lu[[i, j]];
+            }
+        }
+
+        l.dot(&u)
     }
 
     #[test]
