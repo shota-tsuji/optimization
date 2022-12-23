@@ -64,6 +64,36 @@ pub fn gauss_seidel(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) 
     }
 }
 
+/// LU decomposition method for equations
+///
+/// returns solution vector for Ax = b.
+///
+/// * `a` - Matrix A.
+/// * `b` - Vector b.
+pub fn solve_by_lu(a: ArrayView2<f64>, b: &Vec<f64>) -> Vec<f64> {
+    let lu = lu_decompose(a);
+    let n = lu.shape()[0];
+    let mut y = vec![0.0; n];
+    for i in 0..lu.shape()[0] {
+        let mut yi = b[i];
+        for j in 0..i {
+            yi -= lu[[i, j]] * y[j];
+        }
+        y[i] = yi;
+    }
+
+    let mut x = vec![0.0; n];
+    for i in (0..n).rev() {
+        x[i] = y[i];
+        for j in i + 1..n {
+            x[i] -= x[j] * lu[[i, j]];
+        }
+        x[i] /= lu[[i, i]];
+    }
+
+    x
+}
+
 /// LU decomposition
 ///
 /// Decompose matrix A into LU.
@@ -208,6 +238,34 @@ mod tests {
             "eps={}, x={:?}",
             eps,
             x_k
+        );
+    }
+
+    #[test]
+    fn lu_solve_2x2() {
+        let eps = 1e-10;
+        let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
+        let b = vec![13.0, 8.0];
+        let x = solve_by_lu(a.view(), &b);
+        assert!(
+            is_convergent(&vec![1.0, 2.0], &x, eps),
+            "eps={}, x={:?}",
+            eps,
+            x
+        );
+    }
+
+    #[test]
+    fn lu_solve_other_2x2() {
+        let eps = 1e-10;
+        let a = arr2(&[[2.0, 3.0], [5.0, 4.0]]);
+        let b = vec![8.0, 13.0];
+        let x = solve_by_lu(a.view(), &b);
+        assert!(
+            is_convergent(&vec![1.0, 2.0], &x, eps),
+            "eps={}, x={:?}",
+            eps,
+            x
         );
     }
 
