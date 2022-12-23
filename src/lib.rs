@@ -215,7 +215,7 @@ mod tests {
     fn lu_decompose_2x2_unchanged() {
         let eps = 1e-10;
         let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
-        let b = vec![13.0, 8.0];
+        //let b = vec![13.0, 8.0];
         assert_eq!(a, compose_a(lu_decompose(a.view())));
     }
 
@@ -223,19 +223,26 @@ mod tests {
     fn lu_decompose_2x2_row_changed() {
         let eps = 1e-10;
         let a = arr2(&[[2.0, 3.0], [5.0, 4.0]]);
-        let b = vec![8.0, 13.0];
+        //let b = vec![8.0, 13.0];
+        assert_eq!(a, compose_a(lu_decompose(a.view())));
+    }
+
+    #[test]
+    fn lu_decompose_3x3_row_changed() {
+        let eps = 1e-10;
+        let a = arr2(&[[3.0, 1.0, 0.0], [6.0, 1.0, -2.0], [-3.0, 0.0, 3.0]]);
         assert_eq!(a, compose_a(lu_decompose(a.view())));
     }
 
     fn compose_a(lu: Array2<f64>) -> Array2<f64> {
-        let mut l = Array2::eye(2);
+        let mut l = Array2::eye(lu.shape()[0]);
         for i in 1..l.shape()[0] {
             for j in 0..i {
                 l[[i, j]] = lu[[i, j]];
             }
         }
 
-        let mut u = Array2::zeros((2, 2));
+        let mut u = Array2::zeros((lu.shape()[0], lu.shape()[1]));
         for i in 0..u.shape()[0] {
             for j in i..u.shape()[1] {
                 u[[i, j]] = lu[[i, j]];
