@@ -74,7 +74,9 @@ pub fn solve_by_lu(a: ArrayView2<f64>, b: &Vec<f64>) -> Vec<f64> {
     let lu = lu_decompose(a);
     let n = lu.shape()[0];
     let mut y = vec![0.0; n];
-    for i in 0..lu.shape()[0] {
+
+    // solve Ly = b, where y = Ux.
+    for i in 0..n {
         let mut yi = b[i];
         for j in 0..i {
             yi -= lu[[i, j]] * y[j];
@@ -82,6 +84,7 @@ pub fn solve_by_lu(a: ArrayView2<f64>, b: &Vec<f64>) -> Vec<f64> {
         y[i] = yi;
     }
 
+    // solve Ux = y.
     let mut x = vec![0.0; n];
     for i in (0..n).rev() {
         x[i] = y[i];
@@ -98,16 +101,18 @@ pub fn solve_by_lu(a: ArrayView2<f64>, b: &Vec<f64>) -> Vec<f64> {
 ///
 /// Decompose matrix A into LU.
 ///
-/// * `a` - Matrix A
+/// * `a` - Regular Square Matrix A
 pub fn lu_decompose(a: ArrayView2<f64>) -> Array2<f64> {
     let mut a = a.to_owned();
-    for i in 0..a.shape()[0] {
-        let uii = a[[i, i]];
-        for j in i + 1..a.shape()[0] {
-            let l_ij = a[[j, i]] / uii;
-            a[[j, i]] = l_ij;
-            for k in i + 1..a.shape()[1] {
-                a[[j, k]] -= l_ij * a[[i, k]];
+    let n = a.shape()[0];
+    // loop for pivot row
+    for i in 0..n {
+        // forward elimination (loop for columns under the pivot row)
+        for j in i + 1..n {
+            // elementary row transformation
+            a[[j, i]] /= a[[i, i]];
+            for k in i + 1..n {
+                a[[j, k]] -= a[[j, i]] * a[[i, k]];
             }
         }
     }
