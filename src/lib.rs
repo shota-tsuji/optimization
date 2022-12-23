@@ -50,11 +50,6 @@ pub fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
     true
 }
 
-pub fn next_set(f_1: fn(f64) -> f64, x: f64, h: f64) -> (f64, f64, f64) {
-    let h = f_1(x).signum() * h.abs();
-    (h, x, x + h)
-}
-
 /// check whether convergent
 ///
 /// returns true if satisfy convergence, otherwise returns false.
@@ -84,8 +79,6 @@ fn is_convergent(x_k1: &Vec<f64>, x_k_: &Vec<f64>, eps: f64) -> bool {
 mod tests {
     use super::*;
     use ndarray::arr2;
-
-    const F_1: fn(f64) -> f64 = |x: f64| (-2.0 * x);
 
     #[test]
     fn jacobi_3x3_eps6() {
@@ -142,53 +135,5 @@ mod tests {
     fn diagonally_dominant_3x3() {
         let a = arr2(&[[3.0, -1.0, 1.0], [1.0, -3.0, 1.0], [-1.0, 2.0, 4.0]]);
         assert!(is_diagonally_dominant(a.view()));
-    }
-
-    #[test]
-    fn return_pulus_set() {
-        let h = 0.1;
-        let x = -3.0;
-        assert_eq!((h, x, x + h), next_set(F_1, x, h));
-    }
-
-    #[test]
-    fn return_pulus_set2() {
-        let h = 0.2;
-        let x = -3.0;
-        assert_eq!((h, x, x + h), next_set(F_1, x, h));
-    }
-
-    #[test]
-    fn return_x_plus() {
-        let h = 0.2;
-        let x = -1.1;
-        assert_eq!((h, x, x + h), next_set(F_1, x, h));
-    }
-
-    #[test]
-    fn return_minus_set() {
-        let h = 0.1;
-        let x = 3.0;
-        assert_eq!((-h, x, x - h), next_set(F_1, x, h));
-    }
-
-    #[test]
-    fn return_x_minus() {
-        let h = 0.1;
-        let x = 1.1;
-        assert_eq!((-h, x, x - h), next_set(F_1, x, h));
-    }
-
-    #[test]
-    fn return_x_set2() {
-        let h = 0.2;
-        let x = 1.1;
-        assert_eq!((-h, x, x - h), next_set(F_1, x, h));
-    }
-
-    #[test]
-    fn signum() {
-        let a: f64 = -0.0;
-        assert_eq!(0.0, a.signum() * a.abs());
     }
 }
