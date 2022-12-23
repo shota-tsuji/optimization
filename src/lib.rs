@@ -1,4 +1,4 @@
-use ndarray::ArrayView2;
+use ndarray::{arr2, Array2, ArrayView2};
 
 /// Jacobi method
 ///
@@ -107,6 +107,16 @@ fn is_convergent(x_k1: &Vec<f64>, x_k_: &Vec<f64>, eps: f64) -> bool {
     }
 }
 
+/// Calculate PA, P is permutation matrix
+///
+/// permute the rows of A.
+///
+/// * `p` - Matrix P
+/// * `a` - Matrix A
+pub fn permute(p: ArrayView2<f64>, a: ArrayView2<f64>) -> Array2<f64> {
+    p.to_owned().dot(&a)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -195,5 +205,19 @@ mod tests {
     fn diagonally_dominant_3x3() {
         let a = arr2(&[[3.0, -1.0, 1.0], [1.0, -3.0, 1.0], [-1.0, 2.0, 4.0]]);
         assert!(is_diagonally_dominant(a.view()));
+    }
+
+    #[test]
+    fn permute_2x2_unchanged() {
+        let p = arr2(&[[1.0, 0.0], [0.0, 1.0]]);
+        let a = arr2(&[[0.0, 1.0], [2.0, 3.0]]);
+        assert_eq!(a, permute(p.view(), a.view()));
+    }
+
+    #[test]
+    fn permute_2x2_permuted() {
+        let p = arr2(&[[0.0, 1.0], [1.0, 0.0]]);
+        let a = arr2(&[[0.0, 1.0], [2.0, 3.0]]);
+        assert_eq!(arr2(&[[2.0, 3.0], [0.0, 1.0]]), permute(p.view(), a.view()));
     }
 }
