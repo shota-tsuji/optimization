@@ -166,6 +166,20 @@ mod tests {
     }
 
     #[test]
+    fn gauss_seidel_3x3() {
+        let eps = 1e-10;
+        let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
+        let b = vec![0.0, 4.0, 6.0];
+        let x_0 = vec![0.0, 0.0, 0.0];
+        let x_k = &gauss_seidel(a.view(), &x_0, &b, eps);
+        assert!(is_convergent(
+            &vec![-1.0, 1.0, 2.0],
+            x_k,
+            eps
+        ), "eps={}, x={:?}", eps, x_k);
+    }
+
+    #[test]
     fn diagonally_dominant_2x2() {
         let a = arr2(&[[3.0, -2.0], [1.0, -3.0]]);
         assert!(is_diagonally_dominant(a.view()));
