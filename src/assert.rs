@@ -1,3 +1,5 @@
+use ndarray::ArrayView1;
+
 /// check whether convergent
 ///
 /// returns true if satisfy convergence, otherwise returns false.
@@ -9,6 +11,19 @@ pub fn is_convergent(x_k1: &Vec<f64>, x_k_: &Vec<f64>, eps: f64) -> bool {
     let mut delta_sum = 0.0;
     for i in 0..x_k1.len() {
         delta_sum += ((x_k1[i] - x_k_[i]) / x_k1[i]).abs();
+    }
+
+    if delta_sum < eps {
+        true
+    } else {
+        false
+    }
+}
+
+pub fn is_convergent_l1norm(x_k1: ArrayView1<f64>, x_k_: ArrayView1<f64>, eps: f64) -> bool {
+    let mut delta_sum = 0.0;
+    for i in 0..x_k1.len() {
+        delta_sum += ((x_k1[[i]] - x_k_[[i]]) / x_k1[[i]]).abs();
     }
 
     if delta_sum < eps {

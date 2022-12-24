@@ -55,7 +55,19 @@ pub fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::arr2;
+    use crate::assert::is_convergent_l1norm;
+    use ndarray::{arr1, arr2, Array1};
+
+    #[test]
+    fn jacobi_2x2() {
+        let eps = 1e-10;
+        let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
+        let b = vec![13.0, 8.0];
+        let x_0 = vec![0.0, 0.0];
+        let x_k1 = Array1::from_vec(jacobi(a.view(), &x_0, &b, eps));
+        let ans = arr1(&vec![1.0, 2.0]);
+        assert!(is_convergent_l1norm(ans.view(), x_k1.view(), eps));
+    }
 
     #[test]
     fn jacobi_3x3_eps6() {
@@ -63,11 +75,9 @@ mod tests {
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
         let x_0 = vec![0.0, 0.0, 0.0];
-        assert!(is_convergent(
-            &vec![-1.0, 1.0, 2.0],
-            &jacobi(a.view(), &x_0, &b, eps),
-            eps
-        ));
+        let x_k1 = Array1::from_vec(jacobi(a.view(), &x_0, &b, eps));
+        let ans = arr1(&vec![-1.0, 1.0, 2.0]);
+        assert!(is_convergent_l1norm(ans.view(), x_k1.view(), eps));
     }
 
     #[test]
@@ -76,24 +86,9 @@ mod tests {
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
         let b = vec![0.0, 4.0, 6.0];
         let x_0 = vec![0.0, 0.0, 0.0];
-        assert!(is_convergent(
-            &vec![-1.0, 1.0, 2.0],
-            &jacobi(a.view(), &x_0, &b, eps),
-            eps
-        ));
-    }
-
-    #[test]
-    fn jacobi_2x2() {
-        let eps = 1e-10;
-        let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
-        let b = vec![13.0, 8.0];
-        let x_0 = vec![0.0, 0.0];
-        assert!(is_convergent(
-            &vec![1.0, 2.0],
-            &jacobi(a.view(), &x_0, &b, eps),
-            eps
-        ));
+        let x_k1 = Array1::from_vec(jacobi(a.view(), &x_0, &b, eps));
+        let ans = arr1(&vec![-1.0, 1.0, 2.0]);
+        assert!(is_convergent_l1norm(ans.view(), x_k1.view(), eps));
     }
 
     #[test]
