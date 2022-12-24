@@ -8,15 +8,10 @@
 pub fn is_convergent(x_k1: &Vec<f64>, x_k_: &Vec<f64>, eps: f64) -> bool {
     let mut delta_sum = 0.0;
     for i in 0..x_k1.len() {
-        delta_sum += (x_k1[i] - x_k_[i]).abs();
+        delta_sum += ((x_k1[i] - x_k_[i]) / x_k1[i]).abs();
     }
 
-    let mut ans_sum = 0.0;
-    for i in 0..x_k1.len() {
-        ans_sum += x_k1[i].abs();
-    }
-
-    if delta_sum < eps * ans_sum {
+    if delta_sum < eps {
         true
     } else {
         false
