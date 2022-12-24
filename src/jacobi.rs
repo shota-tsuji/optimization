@@ -1,6 +1,6 @@
-use ndarray::{arr2, Array2, ArrayView2};
+use ndarray::{arr2, Array1, Array2, ArrayView1, ArrayView2};
 
-use crate::assert::is_convergent;
+use crate::assert::{is_convergent, is_convergent_l1norm};
 
 /// Jacobi method
 ///
@@ -9,14 +9,19 @@ use crate::assert::is_convergent;
 /// * `a` - Matrix A.
 /// * `x` - Vector x.
 /// * `b` - Vector b.
-pub fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec<f64> {
-    let mut x_k1 = x_0.clone();
+pub fn jacobi(
+    a: ArrayView2<f64>,
+    x_0: ArrayView1<f64>,
+    b: ArrayView1<f64>,
+    eps: f64,
+) -> Array1<f64> {
+    let mut x_k1 = x_0.to_owned();
     let mut y = x_k1.clone();
+    let n = x_0.len();
     loop {
-        //let y = x.clone();
-        for i in 0..x_k1.len() {
+        for i in 0..n {
             let mut xi = b[i];
-            for j in 0..y.len() {
+            for j in 0..n {
                 if j != i {
                     xi -= a[[i, j]] * y[j];
                 }
@@ -24,11 +29,11 @@ pub fn jacobi(a: ArrayView2<f64>, x_0: &Vec<f64>, b: &Vec<f64>, eps: f64) -> Vec
             x_k1[i] = xi / a[[i, i]];
         }
 
-        if is_convergent(&x_k1, &y, eps) {
-            return x_k1;
+        if is_convergent_l1norm(x_k1.view(), y.view(), eps) {
+            return x_k1.to_owned();
         }
 
-        for i in 0..y.len() {
+        for i in 0..n {
             y[i] = x_k1[i];
         }
     }
@@ -62,9 +67,9 @@ mod tests {
     fn jacobi_2x2() {
         let eps = 1e-10;
         let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
-        let b = vec![13.0, 8.0];
-        let x_0 = vec![0.0, 0.0];
-        let x_k1 = Array1::from_vec(jacobi(a.view(), &x_0, &b, eps));
+        let b = arr1(&[13.0, 8.0]);
+        let x_0 = arr1(&[0.0, 0.0]);
+        let x_k1 = jacobi(a.view(), x_0.view(), b.view(), eps);
         let ans = arr1(&vec![1.0, 2.0]);
         assert!(is_convergent_l1norm(ans.view(), x_k1.view(), eps));
     }
@@ -73,9 +78,9 @@ mod tests {
     fn jacobi_3x3_eps6() {
         let eps = 1e-6;
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
-        let b = vec![0.0, 4.0, 6.0];
-        let x_0 = vec![0.0, 0.0, 0.0];
-        let x_k1 = Array1::from_vec(jacobi(a.view(), &x_0, &b, eps));
+        let b = arr1(&[0.0, 4.0, 6.0]);
+        let x_0 = arr1(&[0.0, 0.0, 0.0]);
+        let x_k1 = jacobi(a.view(), x_0.view(), b.view(), eps);
         let ans = arr1(&vec![-1.0, 1.0, 2.0]);
         assert!(is_convergent_l1norm(ans.view(), x_k1.view(), eps));
     }
@@ -84,9 +89,9 @@ mod tests {
     fn jacobi_3x3_eps10() {
         let eps = 1e-10;
         let a = arr2(&[[3.0, 1.0, 1.0], [1.0, 3.0, 1.0], [1.0, 1.0, 3.0]]);
-        let b = vec![0.0, 4.0, 6.0];
-        let x_0 = vec![0.0, 0.0, 0.0];
-        let x_k1 = Array1::from_vec(jacobi(a.view(), &x_0, &b, eps));
+        let b = arr1(&[0.0, 4.0, 6.0]);
+        let x_0 = arr1(&[0.0, 0.0, 0.0]);
+        let x_k1 = jacobi(a.view(), x_0.view(), b.view(), eps);
         let ans = arr1(&vec![-1.0, 1.0, 2.0]);
         assert!(is_convergent_l1norm(ans.view(), x_k1.view(), eps));
     }
