@@ -29,8 +29,9 @@ pub fn jacobi(
             x_k1[i] = xi / a[[i, i]];
         }
 
+        println!("x(k+1)={:?}, x(k)={:?}", &x_k1, &y);
         if is_convergent_l1norm(x_k1.view(), y.view(), eps) {
-            return x_k1.to_owned();
+            return x_k1;
         }
 
         for i in 0..n {
@@ -62,6 +63,17 @@ mod tests {
     use super::*;
     use crate::assert::is_convergent_l1norm;
     use ndarray::{arr1, arr2, Array1};
+
+    #[test]
+    fn jacobi_1x1() {
+        let eps = 1e-10;
+        let a = arr2(&[[1.0]]);
+        let b = arr1(&[2.0]);
+        let x_0 = arr1(&[0.0]);
+        let x_k1 = jacobi(a.view(), x_0.view(), b.view(), eps);
+        let ans = arr1(&vec![2.0]);
+        assert!(is_convergent_l1norm(ans.view(), x_k1.view(), eps));
+    }
 
     #[test]
     fn jacobi_2x2() {

@@ -37,7 +37,8 @@ pub fn norm_l1(v: ArrayView1<f64>) -> f64 {
 /// * `x_k_` - Vector x^(k).
 /// * `eps` - epsilon (error).
 pub fn is_convergent_l1norm(x_k1: ArrayView1<f64>, x_k_: ArrayView1<f64>, eps: f64) -> bool {
-    let v = (&x_k1.to_owned() - &x_k_.to_owned()) / &x_k1.to_owned();
+    let v = (&x_k1.to_owned() - &x_k_.to_owned());
+    let result = norm_l1(v.view());
     if norm_l1(v.view()) < eps {
         true
     } else {
