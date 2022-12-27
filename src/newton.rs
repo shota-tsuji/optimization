@@ -1,5 +1,5 @@
 use crate::jacobi::jacobi;
-use ndarray::{arr1, Array1, Array2, ArrayView1, Dim};
+use ndarray::{Array1, Array2, ArrayView1};
 
 /// Newton method
 ///
@@ -15,7 +15,7 @@ pub fn newton(x_0: ArrayView1<f64>, del_f: Vec<&FuncX>, h: Vec<Vec<&FuncX>>) -> 
     let mut x_k1: Array1<f64>;
     let n = x_0.len();
     let mut a = Array2::zeros((n, n));
-    let mut b = Array1::zeros((n));
+    let mut b = Array1::zeros(n);
     loop {
         for i in 0..n {
             for j in 0..n {
@@ -64,7 +64,7 @@ mod tests {
         let x_0 = arr1(&[0.0]);
         let f_x: FuncX = |x: ArrayView1<f64>| 2.0 * x[0] - 2.0;
         let del_f = vec![&f_x];
-        let f_xx: FuncX = |x: ArrayView1<f64>| 2.0;
+        let f_xx: FuncX = |_x: ArrayView1<f64>| 2.0;
         let h = vec![vec![&f_xx]];
         let ans = arr1(&[1.0]);
         let x_k1 = newton(x_0.view(), del_f, h);
@@ -78,7 +78,7 @@ mod tests {
         let x_0 = arr1(&[0.0]);
         let f_x: FuncX = |x: ArrayView1<f64>| 2.0 * x[0] - 4.0;
         let del_f = vec![&f_x];
-        let f_xx: FuncX = |x: ArrayView1<f64>| 2.0;
+        let f_xx: FuncX = |_x: ArrayView1<f64>| 2.0;
         let h = vec![vec![&f_xx]];
         let ans = arr1(&[2.0]);
         let x_k1 = newton(x_0.view(), del_f, h);
@@ -111,9 +111,9 @@ mod tests {
         let f_y: FuncX = |x: ArrayView1<f64>| -2.0 * x[0] + 2.0 * x[1] - 2.0;
         let del_f = vec![&f_x, &f_y];
 
-        let f_xx: FuncX = |x: ArrayView1<f64>| 4.0;
-        let f_xy: FuncX = |x: ArrayView1<f64>| -2.0;
-        let f_yy: FuncX = |x: ArrayView1<f64>| 2.0;
+        let f_xx: FuncX = |_x: ArrayView1<f64>| 4.0;
+        let f_xy: FuncX = |_x: ArrayView1<f64>| -2.0;
+        let f_yy: FuncX = |_x: ArrayView1<f64>| 2.0;
         let h = vec![vec![&f_xx, &f_xy], vec![&f_xy, &f_yy]];
 
         let ans = arr1(&[3.0, 4.0]);

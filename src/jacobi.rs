@@ -1,6 +1,6 @@
-use ndarray::{arr2, Array1, Array2, ArrayView1, ArrayView2};
+use ndarray::{Array1, ArrayView1, ArrayView2};
 
-use crate::assert::{is_convergent, is_convergent_l1norm};
+use crate::assert::is_convergent_l1norm;
 
 /// Jacobi method
 ///
@@ -62,7 +62,7 @@ pub fn is_diagonally_dominant(a: ArrayView2<f64>) -> bool {
 mod tests {
     use super::*;
     use crate::assert::is_convergent_l1norm;
-    use ndarray::{arr1, arr2, Array1};
+    use ndarray::{arr1, arr2};
 
     #[test]
     fn jacobi_1x1() {

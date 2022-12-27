@@ -1,6 +1,4 @@
-use ndarray::{arr2, Array2, ArrayView2};
-
-use crate::assert::is_convergent;
+use ndarray::{Array2, ArrayView2};
 
 /// LU decomposition method for equations
 ///
@@ -70,6 +68,7 @@ pub fn permute(p: ArrayView2<f64>, a: ArrayView2<f64>) -> Array2<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::assert::is_convergent;
     use ndarray::arr2;
 
     #[test]
@@ -102,7 +101,7 @@ mod tests {
 
     #[test]
     fn lu_decompose_2x2_unchanged() {
-        let eps = 1e-10;
+        let _eps = 1e-10;
         let a = arr2(&[[5.0, 4.0], [2.0, 3.0]]);
         //let b = vec![13.0, 8.0];
         assert_eq!(a, compose_a(lu_decompose(a.view())));
@@ -110,7 +109,7 @@ mod tests {
 
     #[test]
     fn lu_decompose_2x2_row_changed() {
-        let eps = 1e-10;
+        let _eps = 1e-10;
         let a = arr2(&[[2.0, 3.0], [5.0, 4.0]]);
         //let b = vec![8.0, 13.0];
         assert_eq!(a, compose_a(lu_decompose(a.view())));
@@ -118,7 +117,7 @@ mod tests {
 
     #[test]
     fn lu_decompose_3x3_row_changed() {
-        let eps = 1e-10;
+        let _eps = 1e-10;
         let a = arr2(&[[3.0, 1.0, 0.0], [6.0, 1.0, -2.0], [-3.0, 0.0, 3.0]]);
         assert_eq!(a, compose_a(lu_decompose(a.view())));
     }

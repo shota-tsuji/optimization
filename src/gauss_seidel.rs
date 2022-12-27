@@ -1,4 +1,4 @@
-use ndarray::{arr2, Array2, ArrayView2};
+use ndarray::ArrayView2;
 
 use crate::assert::is_convergent;
 
