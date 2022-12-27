@@ -33,7 +33,7 @@ pub fn gauss_seidel(
             return x_k1;
         }
 
-        println!("{:?}", x_k1);
+        //println!("{:?}", x_k1);
         for i in 0..n {
             x_k_[i] = x_k1[i];
         }

@@ -29,8 +29,11 @@ pub fn newton(x_0: ArrayView1<f64>, del_f: Vec<&FuncX>, h: Vec<Vec<&FuncX>>) -> 
         }
 
         // calculate delta-x and add it to current-x
-        //x_k1 = &x_k_ + jacobi(a.view(), Array1::zeros(n).view(), b.view(), eps);
-        x_k1 = &x_k_ + gauss_seidel(a.view(), Array1::zeros(n).view(), b.view(), eps);
+        if cfg!(feature = "gauss-seidel") {
+            x_k1 = &x_k_ + gauss_seidel(a.view(), Array1::zeros(n).view(), b.view(), eps);
+        } else {
+            x_k1 = &x_k_ + jacobi(a.view(), Array1::zeros(n).view(), b.view(), eps);
+        }
         if norm_l2((&x_k1 - &x_k_).view()) < delta {
             break;
         }
