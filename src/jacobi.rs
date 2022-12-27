@@ -29,7 +29,7 @@ pub fn jacobi(
             x_k1[i] = xi / a[[i, i]];
         }
 
-        println!("x(k+1)={:?}, x(k)={:?}", &x_k1, &y);
+        //println!("x(k+1)={:?}, x(k)={:?}", &x_k1, &y);
         if is_convergent_l1norm(x_k1.view(), y.view(), eps) {
             return x_k1;
         }
