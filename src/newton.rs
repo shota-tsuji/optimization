@@ -10,8 +10,8 @@ use ndarray::{arr1, Array1, Array2, ArrayView1, Dim};
 /// * `h` - Hessian matrix of f(x).
 pub fn newton(
     x_0: ArrayView1<f64>,
-    del_f: Vec<impl Fn(ArrayView1<f64>) -> f64>,
-    h: Vec<Vec<impl Fn(ArrayView1<f64>) -> f64>>,
+    del_f: Vec<&fn(ArrayView1<f64>) -> f64>,
+    h: Vec<Vec<&fn(ArrayView1<f64>) -> f64>>,
 ) -> Array1<f64> {
     let delta = 1e-10;
     let eps = 1e-10;
@@ -33,7 +33,7 @@ pub fn newton(
         }
 
         // calculate delta-x and add it to current-x
-        x_k1 = &x_k_ + jacobi(a.view(), arr1(&[0.0]).view(), b.view(), eps);
+        x_k1 = &x_k_ + jacobi(a.view(), Array1::zeros(n).view(), b.view(), eps);
         if norm_l2((&x_k1 - &x_k_).view()) < delta {
             break;
         }
@@ -65,9 +65,9 @@ mod tests {
         // f(x) = x^2 - 2x + 1
         let eps = 1e-10;
         let x_0 = arr1(&[0.0]);
-        let f_x = |x: ArrayView1<f64>| 2.0 * x[[0]] - 2.0;
+        let f_x: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 2.0 * x[0] - 2.0;
         let del_f = vec![&f_x];
-        let f_xx = |x: ArrayView1<f64>| 2.0;
+        let f_xx: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 2.0;
         let h = vec![vec![&f_xx]];
         let ans = arr1(&[1.0]);
         let x_k1 = newton(x_0.view(), del_f, h);
@@ -79,9 +79,9 @@ mod tests {
         // f(x) = x^2 -4x +4
         let eps = 1e-10;
         let x_0 = arr1(&[0.0]);
-        let f_x = |x: ArrayView1<f64>| 2.0 * x[[0]] - 4.0;
+        let f_x: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 2.0 * x[0] - 4.0;
         let del_f = vec![&f_x];
-        let f_xx = |x: ArrayView1<f64>| 2.0;
+        let f_xx: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 2.0;
         let h = vec![vec![&f_xx]];
         let ans = arr1(&[2.0]);
         let x_k1 = newton(x_0.view(), del_f, h);
@@ -94,12 +94,36 @@ mod tests {
         // local minimum: x = 1.0
         let eps = 1e-10;
         let x_0 = arr1(&[2.0]);
-        let f_x = |x: ArrayView1<f64>| 3.0 * x[[0]] * x[[0]] - 4.0 * x[[0]] + 1.0;
+        let f_x: fn(x: ArrayView1<f64>) -> f64 =
+            |x: ArrayView1<f64>| 3.0 * x[0] * x[0] - 4.0 * x[0] + 1.0;
         let del_f = vec![&f_x];
-        let f_xx = |x: ArrayView1<f64>| 6.0 * x[[0]] - 4.0;
+        let f_xx: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 6.0 * x[0] - 4.0;
         let h = vec![vec![&f_xx]];
         let ans = arr1(&[1.0]);
         let x_k1 = newton(x_0.view(), del_f, h);
+        assert!(norm_l2((ans - x_k1).view()) < eps);
+    }
+
+    #[test]
+    fn newton_2x2_quadratic() {
+        // min f(x,y) = 2(x-1)^2 -2xy + (y-1)^2
+        // minimum: (x,y) = (3,4)
+        let eps = 1e-8;
+        let x_0 = arr1(&[0.0, 0.0]);
+
+        let f_x: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 4.0 * x[0] - 2.0 * x[1] - 4.0;
+        let f_y: fn(x: ArrayView1<f64>) -> f64 =
+            |x: ArrayView1<f64>| -2.0 * x[0] + 2.0 * x[1] - 2.0;
+        let del_f = vec![&f_x, &f_y];
+
+        let f_xx: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 4.0;
+        let f_xy: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| -2.0;
+        let f_yy: fn(x: ArrayView1<f64>) -> f64 = |x: ArrayView1<f64>| 2.0;
+        let h = vec![vec![&f_xx, &f_xy], vec![&f_xy, &f_yy]];
+
+        let ans = arr1(&[3.0, 4.0]);
+        let x_k1 = newton(x_0.view(), del_f, h);
+        println!("x(k+1)={:?}", &x_k1);
         assert!(norm_l2((ans - x_k1).view()) < eps);
     }
 }
