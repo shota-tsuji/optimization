@@ -29,6 +29,10 @@ pub fn norm_l1(v: ArrayView1<f64>) -> f64 {
     delta_sum
 }
 
+pub fn norm_l2(v: ArrayView1<f64>) -> f64 {
+    v.dot(&v).sqrt()
+}
+
 /// check whether convergent
 ///
 /// returns true if satisfy convergence, otherwise returns false.
