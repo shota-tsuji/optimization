@@ -1,6 +1,6 @@
-use std::alloc::alloc;
-use ndarray::{arr1, Array1, ArrayView1, ArrayView2};
 use crate::assert::norm_l2;
+use ndarray::{Array1, ArrayView1, ArrayView2};
+
 
 /// Conjugate Gradient method
 ///
@@ -10,12 +10,7 @@ use crate::assert::norm_l2;
 /// * `x_0` - Start point.
 /// * `b` - Vector b.
 /// * `eps` - error threshold.
-pub fn cg(
-    a: ArrayView2<f64>,
-    x_0: ArrayView1<f64>,
-    b: ArrayView1<f64>,
-    eps: f64,
-) -> Array1<f64> {
+pub fn cg(a: ArrayView2<f64>, x_0: ArrayView1<f64>, b: ArrayView1<f64>, eps: f64) -> Array1<f64> {
     let n = x_0.len();
     let mut x = x_0.to_owned();
     let mut r = Array1::zeros(n);
@@ -25,7 +20,7 @@ pub fn cg(
     for i in 0..n {
         let mut ri = b[i];
         for j in 0..n {
-            ri -= a[[i,j]] * x_0[j];
+            ri -= a[[i, j]] * x_0[j];
         }
         r[i] = ri;
     }
@@ -49,7 +44,7 @@ pub fn cg(
         }
 
         if norm_l2(r.view()) < eps {
-            return x
+            return x;
         }
 
         let beta = r.dot(&r) / rr_;
@@ -65,7 +60,7 @@ pub fn cg(
 mod tests {
     use super::*;
     use crate::assert::is_convergent_l1norm;
-    use ndarray::{arr1, arr2, Array1};
+    use ndarray::{arr1, arr2};
 
     #[test]
     fn cg_1x1() {

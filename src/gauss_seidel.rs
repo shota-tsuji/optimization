@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayView1, ArrayView2};
 
-use crate::assert::{is_convergent, is_convergent_l1norm};
+use crate::assert::{is_convergent_l1norm};
 
 /// Gauss-Seidel method
 ///
@@ -44,7 +44,7 @@ pub fn gauss_seidel(
 mod tests {
     use super::*;
     use crate::assert::is_convergent_l1norm;
-    use ndarray::{arr1, arr2, Array1};
+    use ndarray::{arr1, arr2};
 
     #[test]
     fn gauss_seidel_2x2() {
