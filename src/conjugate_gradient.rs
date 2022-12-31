@@ -1,7 +1,6 @@
 use crate::assert::norm_l2;
 use ndarray::{Array1, ArrayView1, ArrayView2};
 
-
 /// Conjugate Gradient method
 ///
 /// returns solution vector for Ax = b.

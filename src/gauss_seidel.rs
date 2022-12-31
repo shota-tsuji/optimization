@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayView1, ArrayView2};
 
-use crate::assert::{is_convergent_l1norm};
+use crate::assert::is_convergent_l1norm;
 
 /// Gauss-Seidel method
 ///
