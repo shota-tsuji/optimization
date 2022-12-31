@@ -51,7 +51,7 @@ pub fn newton(x_0: ArrayView1<f64>, del_f: Vec<&FuncX>, h: Vec<Vec<&FuncX>>) -> 
 /// This type is used to `coercion` from function items to function pointers.
 /// https://doc.rust-lang.org/beta/reference/types/function-item.html
 /// https://stackoverflow.com/questions/27895946/expected-fn-item-found-a-different-fn-item-when-working-with-function-pointer
-type FuncX = fn(ArrayView1<f64>) -> f64;
+pub type FuncX = fn(ArrayView1<f64>) -> f64;
 
 fn norm_l2(x: ArrayView1<f64>) -> f64 {
     x.map(|x| x * x).sum().sqrt()
