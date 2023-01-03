@@ -1,7 +1,8 @@
 use crate::assert::norm_l2;
-use crate::gauss_seidel::gauss_seidel;
+
 use crate::newton::FuncX;
-use ndarray::{arr1, Array1, Array2, ArrayView1};
+use ndarray::{Array1, Array2, ArrayView1};
+
 
 /// Secant method
 ///
@@ -39,42 +40,31 @@ pub fn secant(f: &fn(f64) -> f64, x_0: f64, x_1: f64, eps: f64) -> f64 {
 /// * `f` - f(x).
 /// * `eps` - error threshold.
 pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
-    let eps = 1e-10;
     let delta = 1e-8;
     let n = x_0.len();
-    // initialize B
-    let mut b: Array2<f64> = Array2::eye(1);
+    let mut h: Array2<f64> = Array2::eye(n);
     let mut x_k1 = x_0.to_owned();
     let mut del_f_k_ = del(&del_f, x_k1.view());
 
     loop {
         // calculate del(f(x_k))
 
-        // Calculate gradient descent p, with Bp = -del(f)
-        let p = gauss_seidel(b.view(), arr1(&[0.0]).view(), (-&del_f_k_).view(), eps);
-        //println!("p={:?}", p);
+        // Calculate gradient descent p, with p = - H * del(f)
+        let p = -&h.dot(&del_f_k_);
 
         let alpha = line_search(f, &del_f, p.view(), x_k1.view());
         let s = alpha * &p;
         x_k1 += &s;
-        //println!("x(k+1)={:?}", x_k1);
-        let del_f_k1 = del(&del_f, x_k1.view());
-
         // Calculate del(f(x_k+1)) - del(f(x_k))
         // Because del(f) < 0, y > 0 should be satisfied.
+        let del_f_k1 = del(&del_f, x_k1.view());
         let y = &del_f_k1 - &del_f_k_;
+
+        let rho = 1.0 / &y.dot(&s);
+        let lhm = Array2::eye(n) - rho * x_yt(s.view(), y.view());
+        let rhm = Array2::eye(n) - rho * x_yt(y.view(), s.view());
+        h = lhm.dot(&h.view()).dot(&rhm.view()) + rho * x_yt(s.view(), s.view());
         del_f_k_ = del_f_k1;
-        println!("y={:?}", y);
-        let ys = &y.dot(&s);
-        //println!("ys={:?}", ys);
-        let yyt = &x_yt(y.view(), y.view());
-        let bs = b.dot(&s);
-        println!("B_k={:?}", b);
-        b = &b + (1.0 / ys) * yyt - 1.0 / s.dot(&b.dot(&s)) * bs.dot(&bs.t());
-        //println!("yyt={:?}", yyt);
-        //println!("bssb={:?}", val);
-        //println!("B_k+1={:?}", b);
-        //println!("s={:?}", s);
 
         if f64::abs(norm_l2(del(&del_f, x_k1.view()).view())) < delta {
             return x_k1;
@@ -92,11 +82,9 @@ pub fn line_search(f: FuncX, del_f: &Vec<&FuncX>, p: ArrayView1<f64>, x_0: Array
     let rho = 0.5;
     let c1 = 1e-4;
     let c2 = 0.9;
-    let n = p.len();
     let mut alpha = 10.0;
 
     loop {
-        //let x_1 = &x_0 + (Array1::from_elem(n, alpha) * &p);
         let x_1 = axpy(alpha, p, x_0);
         println!("x_0={}, x_1={}", x_0, x_1);
 
@@ -192,8 +180,8 @@ pub fn is_satisfied_wolfe_conditions(
     x_1: ArrayView1<f64>,
 ) -> bool {
     // del_f0 is inner product (p , del(f(x_k))) < 0 because p ~= -del(f).
-    let mut del_f0 = del(&del_f, x_0);
-    let mut del_f1 = del(&del_f, x_1);
+    let del_f0 = del(&del_f, x_0);
+    let del_f1 = del(&del_f, x_1);
     println!("del_f0={}, del_f1={}", del_f0, del_f1);
 
     if f(x_1) <= f(x_0) + c1 * alpha * p.dot(&del_f0) && -p.dot(&del_f1) <= -c2 * p.dot(&del_f0) {
@@ -209,13 +197,13 @@ mod tests {
 
     use crate::assert::norm_l2;
     use core::f64;
-    use ndarray::ArrayView1;
+    use ndarray::{arr1, ArrayView1};
 
     #[test]
     fn quasi_newton_1x1() {
         // f(x) = x^2 - 2x + 1
         let eps = 1e-6;
-        let x_0 = arr1(&[0.0]);
+        let _x_0 = arr1(&[0.0]);
         let f: FuncX = |x: ArrayView1<f64>| x[0].powf(2.0) - 2.0 * x[0] + 1.0;
         let f_x: FuncX = |x: ArrayView1<f64>| 2.0 * x[0] - 2.0;
         let del_f = vec![&f_x];
@@ -223,6 +211,26 @@ mod tests {
         let ans = arr1(&[1.0]);
         let x_k1 = bfgs(f, del_f, x_0.view());
         println!("x={:?}, truth={:?}", x_k1, ans);
+        assert!(norm_l2((ans - x_k1).view()) < eps);
+    }
+
+    #[test]
+    fn quasi_newton_2x2_quadratic() {
+        // min f(x,y) = 2(x-1)^2 -2xy + (y-1)^2
+        // minimum: (x,y) = (3,4)
+        let f: FuncX = |x: ArrayView1<f64>| {
+            2.0 * (x[0] - 1.0).powf(2.0) - 2.0 * x[0] * x[1] + (x[1] - 1.0).powf(2.0)
+        };
+        let f_x: FuncX = |x: ArrayView1<f64>| 4.0 * x[0] - 2.0 * x[1] - 4.0;
+        let f_y: FuncX = |x: ArrayView1<f64>| -2.0 * x[0] + 2.0 * x[1] - 2.0;
+        let del_f = vec![&f_x, &f_y];
+
+        let eps = 1e-8;
+        let x_0 = arr1(&[0.0, 0.0]);
+        let ans = arr1(&[3.0, 4.0]);
+        let x_k1 = bfgs(f, del_f, x_0.view());
+        println!("x={:?}", x_k1);
+        println!("truth={:?}", ans);
         assert!(norm_l2((ans - x_k1).view()) < eps);
     }
 
