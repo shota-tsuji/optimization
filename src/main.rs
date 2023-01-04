@@ -1,7 +1,7 @@
-use ndarray::{arr1, Array, Array1, Array2, ArrayBase, ArrayView1};
-use optimization::assert::norm_l2;
+use ndarray::{arr1, Array, Array1, Array2, ArrayView1};
+
 use optimization::newton::FuncX;
-use optimization::quasi_newton::bfgs;
+
 
 fn main() {
     let mut rdr = csv::ReaderBuilder::new()
@@ -35,13 +35,13 @@ fn main() {
     let regression = Regression::new(y, features);
     println!("loss={}", regression.loss());
 
-    let eps = 1e-6;
+    let _eps = 1e-6;
     let _x_0 = arr1(&[0.0]);
-    let f: FuncX = |x: ArrayView1<f64>| x[0].powf(2.0) - 2.0 * x[0] + 1.0;
+    let _f: FuncX = |x: ArrayView1<f64>| x[0].powf(2.0) - 2.0 * x[0] + 1.0;
     let f_x: FuncX = |x: ArrayView1<f64>| 2.0 * x[0] - 2.0;
-    let del_f = vec![&f_x];
-    let x_0 = arr1(&[0.0]);
-    let ans = arr1(&[1.0]);
+    let _del_f = vec![&f_x];
+    let _x_0 = arr1(&[0.0]);
+    let _ans = arr1(&[1.0]);
     //let x_k1 = bfgs(f, del_f, x_0.view());
     //println!("x={:?}, truth={:?}", x_k1, ans);
     //assert!(norm_l2((ans - x_k1).view()) < eps);
@@ -106,24 +106,22 @@ impl Regression {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use core::f64;
-    use ndarray::{arr1, arr2, ArrayView1};
+    use ndarray::{arr1, arr2};
 
     #[test]
     fn new() {
         let n = 10;
-        let mut y = Array::zeros(n);
-        let mut features = Array::zeros((n, 1));
+        let y = Array::zeros(n);
+        let features = Array::zeros((n, 1));
         let regression = Regression::new(y, features);
         assert_eq!(6.931471805599453, regression.loss());
     }
 
     #[test]
     fn derivative() {
-        let n = 2;
-        let mut y = arr1(&[-1, -1]);
-        let mut features = arr2(&[[1.0, 0.0], [1.0, 0.0]]);
+        let _n = 2;
+        let y = arr1(&[-1, -1]);
+        let features = arr2(&[[1.0, 0.0], [1.0, 0.0]]);
         let mut regression = Regression::new(y, features);
 
         regression.derivative();

@@ -3,7 +3,6 @@ use crate::assert::norm_l2;
 use crate::newton::FuncX;
 use ndarray::{Array1, Array2, ArrayView1};
 
-
 /// Secant method
 ///
 /// returns the root of f(x).
