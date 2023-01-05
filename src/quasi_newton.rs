@@ -44,20 +44,24 @@ pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
     let mut h: Array2<f64> = Array2::eye(n);
     let mut x_k1 = x_0.to_owned();
     let mut del_f_k_ = del(&del_f, x_k1.view());
+    let mut del_f_k1: Array1<f64>;
+    let mut p: Array1<f64>;
+    let mut s: Array1<f64>;
+    let mut y: Array1<f64>;
 
     while f64::abs(norm_l2(del_f_k_.view())) > delta {
         // Calculate gradient descent p, with p = - H * del(f)
-        let p = -&h.dot(&del_f_k_);
+        p = -&h.dot(&del_f_k_);
 
         let alpha = line_search(f, &del_f, p.view(), x_k1.view());
-        let s = alpha * &p;
+        s = alpha * &p;
         x_k1 += &s;
         // calculate del(f(x_k))
-        let del_f_k1 = del(&del_f, x_k1.view());
+        del_f_k1 = del(&del_f, x_k1.view());
         // Calculate del(f(x_k+1)) - del(f(x_k))
         // Because del(f) < 0, y > 0 should be satisfied.
         // regression.derivative()
-        let y = &del_f_k1 - &del_f_k_;
+        y = &del_f_k1 - &del_f_k_;
 
         let rho = 1.0 / &y.dot(&s);
         let lhm = Array2::eye(n) - rho * x_yt(s.view(), y.view());
