@@ -1,7 +1,11 @@
-use ndarray::{arr1, Array, Array1, Array2, ArrayView1};
+mod assert;
+mod gauss_seidel;
+mod jacobi;
+mod newton;
+mod quasi_newton;
 
-use optimization::newton::FuncX;
-
+use ndarray::{arr1, Array, Array1, Array2, ArrayView1, ArrayView2, ArrayViewMut1};
+use newton::FuncX;
 
 fn main() {
     let mut rdr = csv::ReaderBuilder::new()
@@ -31,9 +35,9 @@ fn main() {
     }
 
     println!("{:?}, {:?},{:?}", y, features, features.shape()[1]);
-    println!("{:?}", features.shape()[1]);
-    let regression = Regression::new(y, features);
-    println!("loss={}", regression.loss());
+    println!("{:?}", &features.shape()[1]);
+    let regression = Regression::new(y, features.clone());
+    println!("loss={}", regression.loss(features.view()));
 
     let _eps = 1e-6;
     let _x_0 = arr1(&[0.0]);
@@ -72,13 +76,13 @@ impl Regression {
         }
     }
 
-    fn loss(&self) -> f64 {
+    fn loss(&self, features: ArrayView2<f64>) -> f64 {
         let mut sum = 0.0;
 
         for i in 0..self.l {
             let mut wx = 0.0;
             for j in 0..self.n {
-                wx += self.w[j] * self.features[[i, j]];
+                wx += self.w[j] * features[[i, j]];
             }
             let yi = f64::from(self.y[i]);
             sum += f64::ln(1.0 + f64::exp(-yi * wx));
@@ -87,7 +91,7 @@ impl Regression {
         sum
     }
 
-    fn derivative(&mut self) {
+    fn derivative(&mut self, mut del_f: ArrayViewMut1<f64>) {
         for i in 0..self.l {
             let mut wx = 0.0;
             for j in 0..self.n {
@@ -97,7 +101,7 @@ impl Regression {
             let yi = f64::from(self.y[i]);
 
             for j in 0..self.n {
-                self.del_f[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
+                del_f[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
             }
         }
     }
@@ -113,8 +117,9 @@ mod tests {
         let n = 10;
         let y = Array::zeros(n);
         let features = Array::zeros((n, 1));
-        let regression = Regression::new(y, features);
-        assert_eq!(6.931471805599453, regression.loss());
+        let regression = Regression::new(y, features.clone());
+        //let x_0 = Array1::zeros(());
+        assert_eq!(6.931471805599453, regression.loss(features.view()));
     }
 
     #[test]
@@ -123,9 +128,10 @@ mod tests {
         let y = arr1(&[-1, -1]);
         let features = arr2(&[[1.0, 0.0], [1.0, 0.0]]);
         let mut regression = Regression::new(y, features);
+        let mut del_f = Array1::zeros(regression.n);
 
-        regression.derivative();
+        regression.derivative(del_f.view_mut());
 
-        assert_eq!(arr1(&[1.0, 0.0]), regression.del_f);
+        assert_eq!(arr1(&[1.0, 0.0]), &del_f);
     }
 }
