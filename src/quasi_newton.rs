@@ -45,18 +45,18 @@ pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
     let mut x_k1 = x_0.to_owned();
     let mut del_f_k_ = del(&del_f, x_k1.view());
 
-    loop {
-        // calculate del(f(x_k))
-
+    while f64::abs(norm_l2(del_f_k_.view())) > delta {
         // Calculate gradient descent p, with p = - H * del(f)
         let p = -&h.dot(&del_f_k_);
 
         let alpha = line_search(f, &del_f, p.view(), x_k1.view());
         let s = alpha * &p;
         x_k1 += &s;
+        // calculate del(f(x_k))
+        let del_f_k1 = del(&del_f, x_k1.view());
         // Calculate del(f(x_k+1)) - del(f(x_k))
         // Because del(f) < 0, y > 0 should be satisfied.
-        let del_f_k1 = del(&del_f, x_k1.view());
+        // regression.derivative()
         let y = &del_f_k1 - &del_f_k_;
 
         let rho = 1.0 / &y.dot(&s);
@@ -64,11 +64,9 @@ pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
         let rhm = Array2::eye(n) - rho * x_yt(y.view(), s.view());
         h = lhm.dot(&h.view()).dot(&rhm.view()) + rho * x_yt(s.view(), s.view());
         del_f_k_ = del_f_k1;
-
-        if f64::abs(norm_l2(del(&del_f, x_k1.view()).view())) < delta {
-            return x_k1;
-        }
     }
+
+    x_k1
 }
 
 /// Return Newton step (alpha)
