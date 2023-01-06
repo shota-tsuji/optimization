@@ -44,26 +44,15 @@ fn main() {
 struct Regression {
     y: Array1<i8>,
     features: Array2<f64>,
-    w: Array1<f64>,
     n: usize,
     l: usize,
-    del_f: Array1<f64>,
 }
 
 impl Regression {
     fn new(y: Array1<i8>, features: Array2<f64>) -> Regression {
         let l = y.len();
         let n = features.shape()[1];
-        let w = Array1::zeros(n);
-        let del_f = Array1::zeros(n);
-        Regression {
-            y,
-            features,
-            w,
-            n,
-            l,
-            del_f,
-        }
+        Regression { y, features, n, l }
     }
 
     fn loss(&self, w: &Array1<f64>) -> f64 {
@@ -81,7 +70,7 @@ impl Regression {
         sum
     }
 
-    fn derivative(&self, w: &Array1<f64>, del_f: &mut Array1<f64>) {
+    fn derivative(&self, w: &Array1<f64>, gradient: &mut Array1<f64>) {
         for i in 0..self.l {
             let mut wx = 0.0;
             for j in 0..self.n {
@@ -92,7 +81,7 @@ impl Regression {
             let yi = f64::from(self.y[i]);
 
             for j in 0..self.n {
-                del_f[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
+                gradient[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
             }
         }
     }
@@ -104,14 +93,15 @@ impl Regression {
         let mut s: Array1<f64>;
         let mut y: Array1<f64>;
         let mut w = Array1::zeros(self.n);
-        let mut del_f_k_ = self.del_f.to_owned();
+        let mut gradient_k_ = Array1::zeros(self.n);
+        self.derivative(&w, &mut gradient_k_);
         let mut del_f_k1 = Array1::zeros(self.n);
-        let g_norm = f64::abs(assert::norm_l2(del_f_k_.view()));
-        self.derivative(&w, &mut del_f_k_);
+        let g_norm = f64::abs(assert::norm_l2(gradient_k_.view()));
+        self.derivative(&w, &mut gradient_k_);
 
-        while f64::abs(assert::norm_l2(del_f_k_.view())) > g_norm * delta {
-            p = -&h.dot(&del_f_k_);
-            let alpha = self.line_search(&p, &w, &del_f_k_);
+        while f64::abs(assert::norm_l2(gradient_k_.view())) > g_norm * delta {
+            p = -&h.dot(&gradient_k_);
+            let alpha = self.line_search(&p, &w, &gradient_k_);
             if alpha == 0.0 {
                 println!("w={:?}", w);
                 break;
@@ -120,14 +110,14 @@ impl Regression {
             w += &s;
 
             self.derivative(&w, &mut del_f_k1);
-            y = &del_f_k1 - &del_f_k_;
+            y = &del_f_k1 - &gradient_k_;
 
             let rho = 1.0 / &y.dot(&s);
             let lhm = Array2::eye(self.n) - rho * quasi_newton::x_yt(s.view(), y.view());
             let rhm = Array2::eye(self.n) - rho * quasi_newton::x_yt(y.view(), s.view());
             h = lhm.dot(&h).dot(&rhm) + rho * quasi_newton::x_yt(s.view(), s.view());
 
-            Regression::copy(&mut del_f_k_, &del_f_k1);
+            Regression::copy(&mut gradient_k_, &del_f_k1);
             //println!("{:?}", del_f_k_);
         }
     }
