@@ -153,14 +153,7 @@ impl Regression {
             self.num_newton_step += 1;
             let x_1 = alpha * p + x_0;
             self.derivative(&x_1, &mut del_f1);
-            if self.is_satisfied_wolfe_conditions(
-                alpha,
-                &p.to_owned(),
-                &x_0.to_owned(),
-                &x_1,
-                &del_f0.to_owned(),
-                &del_f1,
-            ) {
+            if self.is_satisfied_wolfe_conditions(alpha, p, x_0, &x_1, del_f0, &del_f1) {
                 return alpha;
             }
 
