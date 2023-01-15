@@ -8,20 +8,30 @@ use ndarray::{Array, Array1, Array2};
 use std::process;
 
 fn main() {
+    // ラベルと特徴量に分ける
+    let path = String::from("dummy.csv");
+    let (y, features) = load_csv(path);
+
+    println!("{:?}, {:?},{:?}", y, features, features.shape()[1]);
+    println!("{:?}", &features.shape()[1]);
+    let mut regression = Regression::new(y, features.clone());
+    regression.train();
+    //println!("loss={}", regression.loss(features.view()));
+}
+
+fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
-        .from_path("dummy.csv")
+        .from_path(&path)
         .unwrap();
     let n = rdr.records().count();
     println!("{}", n);
-
-    // ラベルと特徴量に分ける
     let mut y = Array::zeros(n);
     let mut features = Array::zeros((n, 123));
 
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
-        .from_path("dummy.csv")
+        .from_path(&path)
         .unwrap();
     for (i, record) in rdr.records().enumerate() {
         let record = record.unwrap();
@@ -34,11 +44,7 @@ fn main() {
         }
     }
 
-    println!("{:?}, {:?},{:?}", y, features, features.shape()[1]);
-    println!("{:?}", &features.shape()[1]);
-    let mut regression = Regression::new(y, features.clone());
-    regression.train();
-    //println!("loss={}", regression.loss(features.view()));
+    (y, features)
 }
 
 struct Regression {
