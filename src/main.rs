@@ -4,8 +4,7 @@ mod jacobi;
 mod newton;
 mod quasi_newton;
 
-use ndarray::{arr1, Array, Array1, Array2, ArrayView1, ArrayViewMut1};
-use newton::FuncX;
+use ndarray::{Array, Array1, Array2};
 
 fn main() {
     let mut rdr = csv::ReaderBuilder::new()
@@ -46,13 +45,24 @@ struct Regression {
     features: Array2<f64>,
     n: usize,
     l: usize,
+    num_newton_step: i64,
+    num_quasi_newton: i64,
 }
 
 impl Regression {
     fn new(y: Array1<i8>, features: Array2<f64>) -> Regression {
         let l = y.len();
         let n = features.shape()[1];
-        Regression { y, features, n, l }
+        let num_newton_step = 0;
+        let num_quasi_newton = 0;
+        Regression {
+            y,
+            features,
+            n,
+            l,
+            num_newton_step,
+            num_quasi_newton,
+        }
     }
 
     fn loss(&self, w: &Array1<f64>) -> f64 {
@@ -99,7 +109,9 @@ impl Regression {
         let g_norm = f64::abs(assert::norm_l2(gradient_k_.view()));
         self.derivative(&w, &mut gradient_k_);
 
+        // check gradient is enough small.
         while f64::abs(assert::norm_l2(gradient_k_.view())) > g_norm * delta {
+            self.num_quasi_newton += 1;
             p = -&h.dot(&gradient_k_);
             let alpha = self.line_search(&p, &w, &gradient_k_);
             if alpha == 0.0 {
@@ -120,6 +132,8 @@ impl Regression {
             Regression::copy(&mut gradient_k_, &del_f_k1);
             //println!("{:?}", del_f_k_);
         }
+        println!("number of newton step: {}", self.num_newton_step);
+        println!("number of quasi-newton: {}", self.num_quasi_newton);
     }
 
     fn copy(x: &mut Array1<f64>, y: &Array1<f64>) {
@@ -129,13 +143,14 @@ impl Regression {
         }
     }
 
-    fn line_search(&self, p: &Array1<f64>, x_0: &Array1<f64>, del_f0: &Array1<f64>) -> f64 {
+    fn line_search(&mut self, p: &Array1<f64>, x_0: &Array1<f64>, del_f0: &Array1<f64>) -> f64 {
         let rho = 0.5;
         let max_iteration = 100;
         let mut iteration = 0;
         let mut alpha = 1.0;
         let mut del_f1 = Array1::zeros(self.n);
         loop {
+            self.num_newton_step += 1;
             let x_1 = alpha * p + x_0;
             self.derivative(&x_1, &mut del_f1);
             if self.is_satisfied_wolfe_conditions(
