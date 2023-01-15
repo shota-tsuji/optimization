@@ -134,6 +134,10 @@ impl Regression {
         }
         println!("number of newton step: {}", self.num_newton_step);
         println!("number of quasi-newton: {}", self.num_quasi_newton);
+        println!(
+            "residual of gradient: {}",
+            assert::norm_l2(gradient_k_.view())
+        );
     }
 
     fn copy(x: &mut Array1<f64>, y: &Array1<f64>) {
