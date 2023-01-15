@@ -5,6 +5,7 @@ mod newton;
 mod quasi_newton;
 
 use ndarray::{Array, Array1, Array2};
+use std::process;
 
 fn main() {
     let mut rdr = csv::ReaderBuilder::new()
@@ -97,7 +98,7 @@ impl Regression {
     }
 
     fn train(&mut self) {
-        let delta = 0.1;
+        let delta = 1e-6;
         let mut h: Array2<f64> = Array2::eye(self.n);
         let mut p: Array1<f64>;
         let mut s: Array1<f64>;
@@ -115,8 +116,8 @@ impl Regression {
             p = -&h.dot(&gradient_k_);
             let alpha = self.line_search(&p, &w, &gradient_k_);
             if alpha == 0.0 {
-                println!("w={:?}", w);
-                break;
+                eprintln!("line search failed.");
+                process::exit(1);
             }
             s = alpha * &p;
             w += &s;
@@ -134,6 +135,7 @@ impl Regression {
         }
         println!("number of newton step: {}", self.num_newton_step);
         println!("number of quasi-newton: {}", self.num_quasi_newton);
+        println!("initial residual of gradient: {}", g_norm);
         println!(
             "residual of gradient: {}",
             assert::norm_l2(gradient_k_.view())
