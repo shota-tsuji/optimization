@@ -12,8 +12,8 @@ fn main() {
     let path = String::from("./a1a.csv");
     let (y, features) = load_csv(path);
 
-    println!("{:?}, {:?},{:?}", y, features, features.shape()[1]);
-    println!("{:?}", &features.shape()[1]);
+    //println!("{:?}, {:?},{:?}", y, features, features.shape()[1]);
+    //println!("{:?}", &features.shape()[1]);
     let mut regression = Regression::new(y, features.clone());
     regression.train();
     //println!("loss={}", regression.loss(features.view()));
@@ -25,7 +25,7 @@ fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
         .from_path(&path)
         .unwrap();
     let n = rdr.records().count();
-    println!("{}", n);
+    //println!("{}", n);
     let mut y = Array::zeros(n);
     let mut features = Array::zeros((n, 123));
 
@@ -38,7 +38,6 @@ fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
         y[i] = record[0].parse::<i8>().unwrap();
         for (j, data) in record.iter().enumerate() {
             if j > 0 {
-                print!(" {}", data);
                 let index = data.parse::<usize>().unwrap() - 1;
                 features[[i, index]] = 1.0;
             }
@@ -174,6 +173,11 @@ impl Regression {
                 return alpha;
             }
 
+            println!(
+                "\tls_{},del_f={}",
+                iteration,
+                f64::abs(assert::norm_l2(del_f1.view()))
+            );
             iteration += 1;
             if iteration >= max_iteration {
                 return 0.0;
