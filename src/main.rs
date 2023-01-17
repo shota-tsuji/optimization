@@ -9,7 +9,7 @@ use std::process;
 
 fn main() {
     // ラベルと特徴量に分ける
-    let path = String::from("dummy.csv");
+    let path = String::from("./a1a.csv");
     let (y, features) = load_csv(path);
 
     println!("{:?}, {:?},{:?}", y, features, features.shape()[1]);
@@ -38,6 +38,7 @@ fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
         y[i] = record[0].parse::<i8>().unwrap();
         for (j, data) in record.iter().enumerate() {
             if j > 0 {
+                print!(" {}", data);
                 let index = data.parse::<usize>().unwrap() - 1;
                 features[[i, index]] = 1.0;
             }
@@ -136,8 +137,12 @@ impl Regression {
             let rhm = Array2::eye(self.n) - rho * quasi_newton::x_yt(y.view(), s.view());
             h = lhm.dot(&h).dot(&rhm) + rho * quasi_newton::x_yt(s.view(), s.view());
 
+            println!(
+                "{}, residual: {:?}",
+                self.num_quasi_newton,
+                f64::abs(assert::norm_l2(gradient_k_.view()))
+            );
             Regression::copy(&mut gradient_k_, &del_f_k1);
-            //println!("{:?}", del_f_k_);
         }
         println!("number of newton step: {}", self.num_newton_step);
         println!("number of quasi-newton: {}", self.num_quasi_newton);
