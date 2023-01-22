@@ -3,9 +3,11 @@ from numpy import linalg as la
 import pandas as pd
 import math
 from scipy.optimize import fmin_bfgs
+import sys
 
 def main():
-    df = pd.read_csv('a1a.csv', header=None)
+    test_csv = sys.argv[1]
+    df = pd.read_csv(test_csv, header=None)
     labels = df[0]
     pos_class = labels.unique()[1]
     mask = labels == pos_class
@@ -21,15 +23,14 @@ def main():
             features[i, j-1] = 1.0
     y_bin = np.ones(labels.shape, dtype=features.dtype)
     y_bin[~mask] = 0.0
-    print(y_bin)
 
     w = np.zeros(n)
     print(f(w, y_bin, features))
+    print(phi(w, y_bin, features))
     print(la.norm(phi(w, y_bin, features)))
 
-    (xopt, fopt, gopt, _, _, _, _) = fmin_bfgs(f, w, phi, args=(y_bin, features), maxiter=100, full_output=True)
+    (xopt, fopt, gopt, _, _, _, _) = fmin_bfgs(f, w, phi, args=(y_bin, features), maxiter=1000, full_output=True)
     print(fopt)
-    #print(gopt)
 
 
 def f(w, y, X):
