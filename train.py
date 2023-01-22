@@ -29,32 +29,30 @@ def main():
 
     (xopt, fopt, gopt, _, _, _, _) = fmin_bfgs(f, w, phi, args=(y_bin, features), maxiter=100, full_output=True)
     print(fopt)
-    print(gopt)
+    #print(gopt)
 
-def f(w, y, features):
+
+def f(w, y, X):
     sum = 0.0
-    i = 0
-    for x in features:
-        sum += (math.log(1.0 + math.exp(w @ x)) - y[i] * w @ x)
-        i += 1
+    l = X.shape[0]
+    for i in range(l):
+        sum += (math.log(1.0 + math.exp(w @ X[i])) - y[i] * w @ X[i])
 
     return sum
 
-def phi(w, y, features):
-    l = features.shape[0]
-    n = features.shape[1]
-    g = np.zeros(n)
-    i = 0
 
-    for x in features:
+def phi(w, y, X):
+    l = X.shape[0]
+    n = X.shape[1]
+    g = np.zeros(n)
+
+    for i in range(l):
         for j in range(n):
-            #g[j] += - y[i] * features[i, j] / (1.0 + math.exp(y[i] * w @ x))
-            #p = math.exp(w @ x) / 1 + math.exp(w @ x)
-            p = 1.0 / (1.0 + math.exp(- w @ x))
-            g[j] += features[i, j] * (p - y[i])
-        i += 1
+            p = 1.0 / (1.0 + math.exp(- w @ X[i]))
+            g[j] += X[i, j] * (p - y[i])
 
     return g
+
 
 if __name__ == "__main__":
     main()
