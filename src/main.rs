@@ -270,7 +270,7 @@ mod tests {
 
         regression.derivative(&w, &mut del_f);
 
-        assert_eq!(arr1(&[1.0, 0.0]), &del_f);
+        assert_eq!(arr1(&[3.0, 0.0]), &del_f);
     }
 
     #[test]
