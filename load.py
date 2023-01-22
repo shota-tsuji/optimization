@@ -1,9 +1,15 @@
 import pandas as pd
 import re
-import math
+import os
+import sys
 
-ifn = open("a1a", "r")
-ofn = open("tmp.a1a.csv", "w")
+test_file = sys.argv[1]
+filename, _ = os.path.splitext(test_file)
+tmpname = "tmp-" + filename
+outname = filename + ".csv"
+
+ifn = open(test_file, "r")
+ofn = open(tmpname, "w")
 
 while True: 
     line = ifn.readline()
@@ -18,15 +24,15 @@ while True:
 ifn.close()
 ofn.close()
 
-
-df = pd.read_csv('tmp.a1a.csv', header=None)
+df = pd.read_csv(tmpname, header=None)
 n_rows_origin = len(df)
 
 df = df.dropna()
-n_rows_dropped = len(df)
-
 df = df.astype('int64')
-print(df)
-df.to_csv('a1a.csv', header=False, index=False)
-
+n_rows_dropped = len(df)
 print("{}/{}".format(n_rows_dropped, n_rows_origin))
+
+df.to_csv(outname, header=False, index=False)
+if os.path.exists(tmpname):
+    os.remove(tmpname)
+
