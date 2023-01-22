@@ -9,14 +9,32 @@ use std::process;
 
 fn main() {
     // ラベルと特徴量に分ける
-    let path = String::from("./a1a.csv");
-    let (y, features) = load_csv(path);
+    let path = String::from("./dummy.csv");
+    let (y, mat_x) = load_csv(path);
+    // unique
+    // index array for value == -1
+    let y_nega_idx: Vec<usize> = y
+        .iter()
+        .enumerate()
+        .filter(|(_, &val)| val == -1)
+        .map(|(i, _)| i)
+        .collect();
+    // ones-array
+    // zero with index-array
+    let mut y_bin = Array1::ones(y.len());
+    for i in y_nega_idx {
+        y_bin[i] = 0;
+    }
 
-    //println!("{:?}, {:?},{:?}", y, features, features.shape()[1]);
-    //println!("{:?}", &features.shape()[1]);
-    let mut regression = Regression::new(y, features.clone());
-    regression.train();
-    //println!("loss={}", regression.loss(features.view()));
+    let mut regression = Regression::new(y_bin, mat_x.clone());
+    let w = Array1::zeros(regression.n);
+    let mut g = Array1::zeros(regression.n);
+    regression.derivative(&w, &mut g);
+
+    println!("loss={}", regression.loss(&w));
+    println!("g={:?}", &g);
+    println!("|g|={}", assert::norm_l2(g.view()));
+    //regression.train();
 }
 
 fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
@@ -50,7 +68,9 @@ fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
 struct Regression {
     y: Array1<i8>,
     features: Array2<f64>,
+    // number of feature parameters
     n: usize,
+    // number of train data
     l: usize,
     num_newton_step: i64,
     num_quasi_newton: i64,
@@ -72,6 +92,7 @@ impl Regression {
         }
     }
 
+    // todo: modify loss
     fn loss(&self, w: &Array1<f64>) -> f64 {
         let mut sum = 0.0;
 
@@ -81,24 +102,30 @@ impl Regression {
                 wx += w[j] * self.features[[i, j]];
             }
             let yi = f64::from(self.y[i]);
-            sum += f64::ln(1.0 + f64::exp(-yi * wx));
+            sum += f64::ln(1.0 + f64::exp(wx)) - yi * wx;
         }
 
         sum
     }
 
-    fn derivative(&self, w: &Array1<f64>, gradient: &mut Array1<f64>) {
+    // todo: modify gradient
+    fn derivative(&self, w: &Array1<f64>, g: &mut Array1<f64>) {
+        for i in 0..g.len() {
+            g[i] = 0.0;
+        }
         for i in 0..self.l {
             let mut wx = 0.0;
             for j in 0..self.n {
-                // todo: modify w as parameter.
+                // todo: modify features as parameter.
                 wx += w[j] * self.features[[i, j]];
             }
 
             let yi = f64::from(self.y[i]);
 
             for j in 0..self.n {
-                gradient[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
+                let p = 1.0 / (1.0 + f64::exp(-wx));
+                //g[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
+                g[j] += self.features[[i, j]] * (p - yi);
             }
         }
     }
@@ -115,6 +142,8 @@ impl Regression {
         let mut del_f_k1 = Array1::zeros(self.n);
         let g_norm = f64::abs(assert::norm_l2(gradient_k_.view()));
         self.derivative(&w, &mut gradient_k_);
+
+        let mut i = 0;
 
         // check gradient is enough small.
         while f64::abs(assert::norm_l2(gradient_k_.view())) > g_norm * delta {
@@ -142,6 +171,11 @@ impl Regression {
                 f64::abs(assert::norm_l2(gradient_k_.view()))
             );
             Regression::copy(&mut gradient_k_, &del_f_k1);
+            i += 1;
+            if i >= 4 {
+                println!("failed");
+                break;
+            }
         }
         println!("number of newton step: {}", self.num_newton_step);
         println!("number of quasi-newton: {}", self.num_quasi_newton);
@@ -198,7 +232,7 @@ impl Regression {
         let c1 = 1e-4;
         let c2 = 0.9;
         if self.loss(w_1) <= self.loss(w_0) + c1 * alpha * p.dot(del_f0)
-            && -p.dot(del_f1) <= -c2 * p.dot(del_f0)
+            && p.dot(del_f1).abs() <= c2 * p.dot(del_f0).abs()
         {
             true
         } else {
