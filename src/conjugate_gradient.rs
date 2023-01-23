@@ -1,4 +1,4 @@
-use crate::assert::norm_l2;
+use crate::linear_algebra as la;
 use ndarray::{Array1, ArrayView1, ArrayView2};
 
 /// Conjugate Gradient method
@@ -42,7 +42,7 @@ pub fn cg(a: ArrayView2<f64>, x_0: ArrayView1<f64>, b: ArrayView1<f64>, eps: f64
             r[i] = r[i] - alpha * ap[i];
         }
 
-        if norm_l2(&r) < eps {
+        if la::norm_l2(&r) < eps {
             return x;
         }
 

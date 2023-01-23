@@ -1,4 +1,3 @@
-use crate::assert::norm_l2;
 use crate::linear_algebra as la;
 
 use crate::newton::FuncX;
@@ -50,7 +49,7 @@ pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
     let mut s: Array1<f64>;
     let mut y: Array1<f64>;
 
-    while f64::abs(norm_l2(&del_f_k_)) > delta {
+    while f64::abs(la::norm_l2(&del_f_k_)) > delta {
         // Calculate gradient descent p, with p = - H * del(f)
         p = -&h.dot(&del_f_k_);
 
@@ -65,9 +64,9 @@ pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
         y = &del_f_k1 - &del_f_k_;
 
         let rho = 1.0 / &y.dot(&s);
-        let lhm = Array2::eye(n) - rho * la::x_yt(&s, &y);
-        let rhm = Array2::eye(n) - rho * la::x_yt(&y, &s);
-        h = lhm.dot(&h.view()).dot(&rhm.view()) + rho * la::x_yt(&s, &s);
+        let lhm = Array2::eye(n) - rho * la::outer(&s, &y);
+        let rhm = Array2::eye(n) - rho * la::outer(&y, &s);
+        h = lhm.dot(&h.view()).dot(&rhm.view()) + rho * la::outer(&s, &s);
         del_f_k_ = del_f_k1;
     }
 
@@ -178,7 +177,6 @@ pub fn is_satisfied_wolfe_conditions(
 mod tests {
     use super::*;
 
-    use crate::assert::norm_l2;
     use core::f64;
     use ndarray::{arr1, ArrayView1};
 
@@ -194,7 +192,7 @@ mod tests {
         let ans = arr1(&[1.0]);
         let x_k1 = bfgs(f, del_f, x_0.view());
         println!("x={:?}, truth={:?}", x_k1, ans);
-        assert!(norm_l2(&(ans - x_k1)) < eps);
+        assert!(la::norm_l2(&(ans - x_k1)) < eps);
     }
 
     #[test]
@@ -214,7 +212,7 @@ mod tests {
         let x_k1 = bfgs(f, del_f, x_0.view());
         println!("x={:?}", x_k1);
         println!("truth={:?}", ans);
-        assert!(norm_l2(&(ans - x_k1)) < eps);
+        assert!(la::norm_l2(&(ans - x_k1)) < eps);
     }
 
     #[test]

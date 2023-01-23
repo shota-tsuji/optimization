@@ -1,4 +1,3 @@
-use optimization::assert;
 use optimization::linear_algebra as la;
 
 use ndarray::{Array, Array1, Array2};
@@ -30,7 +29,7 @@ fn main() {
 
     println!("loss={}", regression.loss(&w));
     //println!("g={:?}", &g);
-    println!("|g|={}", assert::norm_l2(&g));
+    println!("|g|={}", la::norm_l2(&g));
     regression.train();
 }
 
@@ -145,11 +144,11 @@ impl Regression {
         let mut h: Array2<f64> = Array2::eye(n);
         let mat_i = Array2::<f64>::eye(n);
 
-        let g_norm = f64::abs(assert::norm_l2(&g));
+        let g_norm = f64::abs(la::norm_l2(&g));
         let mut i = 0;
 
         // check gradient is enough small.
-        while f64::abs(assert::norm_l2(&g)) > g_norm * delta {
+        while f64::abs(la::norm_l2(&g)) > g_norm * delta {
             self.num_quasi_newton += 1;
             p = -&h.dot(&g);
             let alpha = self.line_search(&p, &w, &g);
@@ -164,14 +163,14 @@ impl Regression {
             y = &g_new - &g;
 
             let rho = 1.0 / &y.dot(&s);
-            let lhm = &mat_i - rho * la::x_yt(&s, &y);
-            let rhm = &mat_i - rho * la::x_yt(&y, &s);
-            h = lhm.dot(&h).dot(&rhm) + rho * la::x_yt(&s, &s);
+            let lhm = &mat_i - rho * la::outer(&s, &y);
+            let rhm = &mat_i - rho * la::outer(&y, &s);
+            h = lhm.dot(&h).dot(&rhm) + rho * la::outer(&s, &s);
 
             println!(
                 "{}, residual: {:?}",
                 self.num_quasi_newton,
-                f64::abs(assert::norm_l2(&g))
+                f64::abs(la::norm_l2(&g))
             );
             la::copy(&mut g, &g_new);
             i += 1;
@@ -183,7 +182,7 @@ impl Regression {
         println!("number of newton step: {}", self.num_newton_step);
         println!("number of quasi-newton: {}", self.num_quasi_newton);
         println!("initial residual of gradient: {}", g_norm);
-        println!("residual of gradient: {}", assert::norm_l2(&g));
+        println!("residual of gradient: {}", la::norm_l2(&g));
     }
 
     fn line_search(&mut self, p: &Array1<f64>, x_0: &Array1<f64>, del_f0: &Array1<f64>) -> f64 {
@@ -203,7 +202,7 @@ impl Regression {
             //println!(
             //    "\tls_{},del_f={}",
             //    iteration,
-            //    f64::abs(assert::norm_l2(del_f1.view()))
+            //    f64::abs(la::norm_l2(del_f1.view()))
             //);
             iteration += 1;
             if iteration >= max_iteration {
