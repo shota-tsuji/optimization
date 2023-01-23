@@ -163,9 +163,9 @@ impl Regression {
             y = &g_new - &g;
 
             let rho = 1.0 / &y.dot(&s);
-            let lhm = &mat_i - rho * quasi_newton::x_yt(s.view(), y.view());
-            let rhm = &mat_i - rho * quasi_newton::x_yt(y.view(), s.view());
-            h = lhm.dot(&h).dot(&rhm) + rho * quasi_newton::x_yt(s.view(), s.view());
+            let lhm = &mat_i - rho * quasi_newton::x_yt(&s, &y);
+            let rhm = &mat_i - rho * quasi_newton::x_yt(&y, &s);
+            h = lhm.dot(&h).dot(&rhm) + rho * quasi_newton::x_yt(&s, &s);
 
             println!(
                 "{}, residual: {:?}",
