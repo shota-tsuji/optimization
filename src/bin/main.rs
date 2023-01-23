@@ -132,9 +132,6 @@ impl Regression {
         let n = self.n;
 
         // const vector
-        let mut p: Array1<f64>;
-        let mut s: Array1<f64>;
-        let mut y: Array1<f64>;
         let mut w = Array1::zeros(n);
         let mut g = Array1::zeros(n);
         let mut g_new = Array1::zeros(n);
@@ -150,17 +147,17 @@ impl Regression {
         // check gradient is enough small.
         while f64::abs(la::norm_l2(&g)) > g_norm * delta {
             self.num_quasi_newton += 1;
-            p = -&h.dot(&g);
+            let p = -&h.dot(&g);
             let alpha = self.line_search(&p, &w, &g);
             if alpha == 0.0 {
                 eprintln!("line search failed.");
                 process::exit(1);
             }
-            s = alpha * &p;
+            let s = alpha * &p;
             w += &s;
 
             self.gradient(&w, &mut g_new);
-            y = &g_new - &g;
+            let y = &g_new - &g;
 
             let rho = 1.0 / &y.dot(&s);
             let lhm = &mat_i - rho * la::outer(&s, &y);
