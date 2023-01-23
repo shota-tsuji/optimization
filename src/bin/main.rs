@@ -206,11 +206,11 @@ impl Regression {
                 return alpha;
             }
 
-            println!(
-                "\tls_{},del_f={}",
-                iteration,
-                f64::abs(assert::norm_l2(del_f1.view()))
-            );
+            //println!(
+            //    "\tls_{},del_f={}",
+            //    iteration,
+            //    f64::abs(assert::norm_l2(del_f1.view()))
+            //);
             iteration += 1;
             if iteration >= max_iteration {
                 return 0.0;
