@@ -127,25 +127,31 @@ impl Regression {
     }
 
     fn train(&mut self) {
+        // const scala
         let delta = 1e-6;
-        let mut h: Array2<f64> = Array2::eye(self.n);
+        let n = self.n;
+
+        // const vector
         let mut p: Array1<f64>;
         let mut s: Array1<f64>;
         let mut y: Array1<f64>;
-        let mut w = Array1::zeros(self.n);
-        let mut gradient_k_ = Array1::zeros(self.n);
-        self.derivative(&w, &mut gradient_k_);
-        let mut del_f_k1 = Array1::zeros(self.n);
-        let g_norm = f64::abs(assert::norm_l2(gradient_k_.view()));
-        self.derivative(&w, &mut gradient_k_);
+        let mut w = Array1::zeros(n);
+        let mut g = Array1::zeros(n);
+        let mut g_new = Array1::zeros(n);
+        self.derivative(&w, &mut g);
 
+        // const matrix
+        let mut h: Array2<f64> = Array2::eye(n);
+        let mat_i = Array2::<f64>::eye(n);
+
+        let g_norm = f64::abs(assert::norm_l2(g.view()));
         let mut i = 0;
 
         // check gradient is enough small.
-        while f64::abs(assert::norm_l2(gradient_k_.view())) > g_norm * delta {
+        while f64::abs(assert::norm_l2(g.view())) > g_norm * delta {
             self.num_quasi_newton += 1;
-            p = -&h.dot(&gradient_k_);
-            let alpha = self.line_search(&p, &w, &gradient_k_);
+            p = -&h.dot(&g);
+            let alpha = self.line_search(&p, &w, &g);
             if alpha == 0.0 {
                 eprintln!("line search failed.");
                 process::exit(1);
@@ -153,20 +159,20 @@ impl Regression {
             s = alpha * &p;
             w += &s;
 
-            self.derivative(&w, &mut del_f_k1);
-            y = &del_f_k1 - &gradient_k_;
+            self.derivative(&w, &mut g_new);
+            y = &g_new - &g;
 
             let rho = 1.0 / &y.dot(&s);
-            let lhm = Array2::eye(self.n) - rho * quasi_newton::x_yt(s.view(), y.view());
-            let rhm = Array2::eye(self.n) - rho * quasi_newton::x_yt(y.view(), s.view());
+            let lhm = &mat_i - rho * quasi_newton::x_yt(s.view(), y.view());
+            let rhm = &mat_i - rho * quasi_newton::x_yt(y.view(), s.view());
             h = lhm.dot(&h).dot(&rhm) + rho * quasi_newton::x_yt(s.view(), s.view());
 
             println!(
                 "{}, residual: {:?}",
                 self.num_quasi_newton,
-                f64::abs(assert::norm_l2(gradient_k_.view()))
+                f64::abs(assert::norm_l2(g.view()))
             );
-            Regression::copy(&mut gradient_k_, &del_f_k1);
+            Regression::copy(&mut g, &g_new);
             i += 1;
             if i >= 4 {
                 println!("failed");
@@ -176,10 +182,7 @@ impl Regression {
         println!("number of newton step: {}", self.num_newton_step);
         println!("number of quasi-newton: {}", self.num_quasi_newton);
         println!("initial residual of gradient: {}", g_norm);
-        println!(
-            "residual of gradient: {}",
-            assert::norm_l2(gradient_k_.view())
-        );
+        println!("residual of gradient: {}", assert::norm_l2(g.view()));
     }
 
     fn copy(x: &mut Array1<f64>, y: &Array1<f64>) {
