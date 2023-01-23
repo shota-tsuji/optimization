@@ -1,8 +1,4 @@
-mod assert;
-mod gauss_seidel;
-mod jacobi;
-mod newton;
-mod quasi_newton;
+use optimization::{assert, quasi_newton};
 
 use ndarray::{Array, Array1, Array2};
 use std::process;
@@ -32,9 +28,9 @@ fn main() {
     regression.derivative(&w, &mut g);
 
     println!("loss={}", regression.loss(&w));
-    println!("g={:?}", &g);
+    //println!("g={:?}", &g);
     println!("|g|={}", assert::norm_l2(g.view()));
-    //regression.train();
+    regression.train();
 }
 
 fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
