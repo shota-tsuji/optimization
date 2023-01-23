@@ -1,4 +1,5 @@
-use optimization::{assert, quasi_newton};
+use optimization::assert;
+use optimization::linear_algebra as la;
 
 use ndarray::{Array, Array1, Array2};
 use std::process;
@@ -163,16 +164,16 @@ impl Regression {
             y = &g_new - &g;
 
             let rho = 1.0 / &y.dot(&s);
-            let lhm = &mat_i - rho * quasi_newton::x_yt(&s, &y);
-            let rhm = &mat_i - rho * quasi_newton::x_yt(&y, &s);
-            h = lhm.dot(&h).dot(&rhm) + rho * quasi_newton::x_yt(&s, &s);
+            let lhm = &mat_i - rho * la::x_yt(&s, &y);
+            let rhm = &mat_i - rho * la::x_yt(&y, &s);
+            h = lhm.dot(&h).dot(&rhm) + rho * la::x_yt(&s, &s);
 
             println!(
                 "{}, residual: {:?}",
                 self.num_quasi_newton,
                 f64::abs(assert::norm_l2(&g))
             );
-            Regression::copy(&mut g, &g_new);
+            la::copy(&mut g, &g_new);
             i += 1;
             if i >= 4 {
                 println!("failed");
@@ -183,13 +184,6 @@ impl Regression {
         println!("number of quasi-newton: {}", self.num_quasi_newton);
         println!("initial residual of gradient: {}", g_norm);
         println!("residual of gradient: {}", assert::norm_l2(&g));
-    }
-
-    fn copy(x: &mut Array1<f64>, y: &Array1<f64>) {
-        let n = x.len();
-        for i in 0..n {
-            x[i] = y[i];
-        }
     }
 
     fn line_search(&mut self, p: &Array1<f64>, x_0: &Array1<f64>, del_f0: &Array1<f64>) -> f64 {

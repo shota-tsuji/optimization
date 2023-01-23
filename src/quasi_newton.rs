@@ -1,4 +1,5 @@
 use crate::assert::norm_l2;
+use crate::linear_algebra as la;
 
 use crate::newton::FuncX;
 use ndarray::{Array1, Array2, ArrayView1};
@@ -64,9 +65,9 @@ pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
         y = &del_f_k1 - &del_f_k_;
 
         let rho = 1.0 / &y.dot(&s);
-        let lhm = Array2::eye(n) - rho * x_yt(&s, &y);
-        let rhm = Array2::eye(n) - rho * x_yt(&y, &s);
-        h = lhm.dot(&h.view()).dot(&rhm.view()) + rho * x_yt(&s, &s);
+        let lhm = Array2::eye(n) - rho * la::x_yt(&s, &y);
+        let rhm = Array2::eye(n) - rho * la::x_yt(&y, &s);
+        h = lhm.dot(&h.view()).dot(&rhm.view()) + rho * la::x_yt(&s, &s);
         del_f_k_ = del_f_k1;
     }
 
@@ -124,25 +125,6 @@ pub fn ax(a: f64, x: ArrayView1<f64>) -> Array1<f64> {
     }
 
     vec
-}
-
-/// Calculate x y^T
-///
-/// Return N x N matrix.
-/// * `x` - N-elements vector.
-/// * `y` - N-elements vector.
-pub fn x_yt(x: &Array1<f64>, y: &Array1<f64>) -> Array2<f64> {
-    let m = x.len();
-    let n = y.len();
-    let mut matrix = Array2::zeros((m, n));
-
-    for i in 0..m {
-        for j in 0..n {
-            matrix[[i, j]] = x[i] * y[j];
-        }
-    }
-
-    matrix
 }
 
 pub fn del(del_f: &Vec<&FuncX>, x: ArrayView1<f64>) -> Array1<f64> {
