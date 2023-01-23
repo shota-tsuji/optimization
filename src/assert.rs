@@ -1,3 +1,4 @@
+use ndarray::Array1;
 use ndarray::ArrayView1;
 
 /// check whether convergent
@@ -29,8 +30,8 @@ pub fn norm_l1(v: ArrayView1<f64>) -> f64 {
     delta_sum
 }
 
-pub fn norm_l2(v: ArrayView1<f64>) -> f64 {
-    v.dot(&v).sqrt()
+pub fn norm_l2(v: &Array1<f64>) -> f64 {
+    v.dot(v).sqrt()
 }
 
 /// check whether convergent

@@ -49,7 +49,7 @@ pub fn bfgs(f: FuncX, del_f: Vec<&FuncX>, x_0: ArrayView1<f64>) -> Array1<f64> {
     let mut s: Array1<f64>;
     let mut y: Array1<f64>;
 
-    while f64::abs(norm_l2(del_f_k_.view())) > delta {
+    while f64::abs(norm_l2(&del_f_k_)) > delta {
         // Calculate gradient descent p, with p = - H * del(f)
         p = -&h.dot(&del_f_k_);
 
@@ -212,7 +212,7 @@ mod tests {
         let ans = arr1(&[1.0]);
         let x_k1 = bfgs(f, del_f, x_0.view());
         println!("x={:?}, truth={:?}", x_k1, ans);
-        assert!(norm_l2((ans - x_k1).view()) < eps);
+        assert!(norm_l2(&(ans - x_k1)) < eps);
     }
 
     #[test]
@@ -232,7 +232,7 @@ mod tests {
         let x_k1 = bfgs(f, del_f, x_0.view());
         println!("x={:?}", x_k1);
         println!("truth={:?}", ans);
-        assert!(norm_l2((ans - x_k1).view()) < eps);
+        assert!(norm_l2(&(ans - x_k1)) < eps);
     }
 
     #[test]

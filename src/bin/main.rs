@@ -29,7 +29,7 @@ fn main() {
 
     println!("loss={}", regression.loss(&w));
     //println!("g={:?}", &g);
-    println!("|g|={}", assert::norm_l2(g.view()));
+    println!("|g|={}", assert::norm_l2(&g));
     regression.train();
 }
 
@@ -144,11 +144,11 @@ impl Regression {
         let mut h: Array2<f64> = Array2::eye(n);
         let mat_i = Array2::<f64>::eye(n);
 
-        let g_norm = f64::abs(assert::norm_l2(g.view()));
+        let g_norm = f64::abs(assert::norm_l2(&g));
         let mut i = 0;
 
         // check gradient is enough small.
-        while f64::abs(assert::norm_l2(g.view())) > g_norm * delta {
+        while f64::abs(assert::norm_l2(&g)) > g_norm * delta {
             self.num_quasi_newton += 1;
             p = -&h.dot(&g);
             let alpha = self.line_search(&p, &w, &g);
@@ -170,7 +170,7 @@ impl Regression {
             println!(
                 "{}, residual: {:?}",
                 self.num_quasi_newton,
-                f64::abs(assert::norm_l2(g.view()))
+                f64::abs(assert::norm_l2(&g))
             );
             Regression::copy(&mut g, &g_new);
             i += 1;
@@ -182,7 +182,7 @@ impl Regression {
         println!("number of newton step: {}", self.num_newton_step);
         println!("number of quasi-newton: {}", self.num_quasi_newton);
         println!("initial residual of gradient: {}", g_norm);
-        println!("residual of gradient: {}", assert::norm_l2(g.view()));
+        println!("residual of gradient: {}", assert::norm_l2(&g));
     }
 
     fn copy(x: &mut Array1<f64>, y: &Array1<f64>) {
