@@ -25,7 +25,7 @@ fn main() {
     let mut regression = Regression::new(y_bin, mat_x.clone());
     let w = Array1::zeros(regression.n);
     let mut g = Array1::zeros(regression.n);
-    regression.derivative(&w, &mut g);
+    regression.gradient(&w, &mut g);
 
     println!("loss={}", regression.loss(&w));
     //println!("g={:?}", &g);
@@ -105,7 +105,7 @@ impl Regression {
     }
 
     // todo: modify gradient
-    fn derivative(&self, w: &Array1<f64>, g: &mut Array1<f64>) {
+    fn gradient(&self, w: &Array1<f64>, g: &mut Array1<f64>) {
         for i in 0..g.len() {
             g[i] = 0.0;
         }
@@ -138,7 +138,7 @@ impl Regression {
         let mut w = Array1::zeros(n);
         let mut g = Array1::zeros(n);
         let mut g_new = Array1::zeros(n);
-        self.derivative(&w, &mut g);
+        self.gradient(&w, &mut g);
 
         // const matrix
         let mut h: Array2<f64> = Array2::eye(n);
@@ -159,7 +159,7 @@ impl Regression {
             s = alpha * &p;
             w += &s;
 
-            self.derivative(&w, &mut g_new);
+            self.gradient(&w, &mut g_new);
             y = &g_new - &g;
 
             let rho = 1.0 / &y.dot(&s);
@@ -194,7 +194,7 @@ impl Regression {
         loop {
             self.num_newton_step += 1;
             let x_1 = alpha * p + x_0;
-            self.derivative(&x_1, &mut del_f1);
+            self.gradient(&x_1, &mut del_f1);
             if self.is_satisfied_wolfe_conditions(alpha, p, x_0, &x_1, del_f0, &del_f1) {
                 return alpha;
             }
@@ -260,7 +260,7 @@ mod tests {
         let mut del_f = Array1::zeros(regression.n);
         let w = Array1::<f64>::zeros(n);
 
-        regression.derivative(&w, &mut del_f);
+        regression.gradient(&w, &mut del_f);
 
         assert_eq!(arr1(&[3.0, 0.0]), &del_f);
     }
