@@ -9,6 +9,11 @@ edition = "2021"
 name = "logistic"
 path = "src/bin/main.rs"
 
+[[bin]]
+name = "example"
+path = "src/bin/example.rs"
+required-features = ["argmin-math/ndarray_latest-serde", "slog-logger"]
+
 [lib]
 name = "optimization"
 path = "src/lib.rs"
@@ -16,9 +21,18 @@ path = "src/lib.rs"
 [features]
 default = []
 gauss-seidel = []
+slog-logger = ["slog", "slog-term", "slog-async"]
 
 [dependencies]
 ndarray = "0.15.6"
 csv = "1.1"
-argmin = { version = "0.7" }
+
+ndarray-linalg = { version = "0.14", features = ["netlib"] }
+slog = { version = "2.4.1", optional = true, features = ["dynamic-keys"] }
+slog-term = { version = "2.8.1", optional = true }
+slog-async = { version = "2.7.0", optional = true }
+
+argmin = { version = "0.7", features = ["slog-logger", "serde1"]}
 argmin-math = { version = "0.2", features = ["nalgebra_latest-serde"] }
+finitediff = { version = "0.1.4", features = ["ndarray"] }
+argmin_testfunctions = "0.1.1"
