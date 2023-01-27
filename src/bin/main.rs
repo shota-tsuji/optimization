@@ -154,24 +154,22 @@ mod tests {
         let l = 10;
         let n = 1;
         let y = Array::zeros(l);
-        let features = Array::zeros((l, n));
-        let regression = Logistic::new(y, features.clone());
         let w = Array1::<f64>::zeros(n);
-        assert_eq!(6.931471805599453, regression.cost(&w).unwrap());
+        let mat_x = Array::zeros((l, n));
+        let logistic = Logistic::new(y, mat_x);
+
+        assert_eq!(6.931471805599453, logistic.cost(&w).unwrap());
     }
 
     #[test]
-    fn derivative() {
+    fn gradient() {
         // if w is 0 vector
         let n = 2;
         let y = arr1(&[-1, -1]);
-        let features = arr2(&[[1.0, 0.0], [1.0, 0.0]]);
-        let regression = Logistic::new(y, features);
         let w = Array1::<f64>::zeros(n);
+        let mat_x = arr2(&[[1.0, 0.0], [1.0, 0.0]]);
+        let logistic = Logistic::new(y, mat_x);
 
-        assert_eq!(arr1(&[3.0, 0.0]), regression.gradient(&w).unwrap());
+        assert_eq!(arr1(&[3.0, 0.0]), logistic.gradient(&w).unwrap());
     }
-
-    #[test]
-    fn wolfe_conditions() {}
 }
