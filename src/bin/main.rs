@@ -6,7 +6,7 @@ use argmin::solver::quasinewton::BFGS;
 use ndarray::{Array, Array1, Array2};
 
 fn main() {
-    // ラベルと特徴量に分ける
+    // divide to labels and samples
     let path = String::from("./dummy.csv");
     let (y, mat_x) = load_csv(path);
     // unique
@@ -35,7 +35,6 @@ fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
         .from_path(&path)
         .unwrap();
     let n = rdr.records().count();
-    //println!("{}", n);
     let mut y = Array::zeros(n);
     let mut features = Array::zeros((n, 123));
 
@@ -100,13 +99,9 @@ impl Gradient for Logistic {
 
     fn gradient(&self, p: &Self::Param) -> Result<Self::Gradient, Error> {
         let mut g = Array1::zeros(self.n);
-        //for i in 0..g.len() {
-        //    g[i] = 0.0;
-        //}
         for i in 0..self.l {
             let mut wx = 0.0;
             for j in 0..self.n {
-                // todo: modify features as parameter.
                 wx += p[j] * self.features[[i, j]];
             }
 
@@ -114,7 +109,6 @@ impl Gradient for Logistic {
 
             for j in 0..self.n {
                 let p = 1.0 / (1.0 + f64::exp(-wx));
-                //g[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
                 g[j] += self.features[[i, j]] * (p - yi);
             }
         }
