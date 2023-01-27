@@ -24,7 +24,7 @@ fn main() {
         y_bin[i] = 0;
     }
 
-    let mut logistic = Logistic::new(y_bin, mat_x.clone());
+    let logistic = Logistic::new(y_bin, mat_x.clone());
     let mut regression = Regression {};
     regression.train(logistic);
 }
@@ -64,24 +64,13 @@ struct Logistic {
     n: usize,
     // number of train data
     l: usize,
-    num_newton_step: i64,
-    num_quasi_newton: i64,
 }
 
 impl Logistic {
     fn new(y: Array1<i8>, features: Array2<f64>) -> Logistic {
         let l = y.len();
         let n = features.shape()[1];
-        let num_newton_step = 0;
-        let num_quasi_newton = 0;
-        Logistic {
-            y,
-            features,
-            n,
-            l,
-            num_newton_step,
-            num_quasi_newton,
-        }
+        Logistic { y, features, n, l }
     }
 }
 
