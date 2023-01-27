@@ -1,12 +1,9 @@
 use argmin::core::observers::{ObserverMode, SlogLogger};
 use argmin::core::{CostFunction, Error, Executor, Gradient};
-use argmin::solver::linesearch::condition::StrongWolfeCondition;
 use argmin::solver::linesearch::HagerZhangLineSearch;
 use argmin::solver::quasinewton::BFGS;
-use optimization::linear_algebra as la;
 
 use ndarray::{Array, Array1, Array2};
-use std::process;
 
 fn main() {
     // ラベルと特徴量に分ける
