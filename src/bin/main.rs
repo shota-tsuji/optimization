@@ -1,9 +1,13 @@
+use argmin::core::observers::{ObserverMode, SlogLogger};
+use argmin::core::{CostFunction, Error, Executor, Gradient};
+use argmin::solver::linesearch::MoreThuenteLineSearch;
+use argmin::solver::quasinewton::BFGS;
 use optimization::linear_algebra as la;
 
 use ndarray::{Array, Array1, Array2};
 use std::process;
 
-fn main() {
+fn main() -> Result<(), Error> {
     // ラベルと特徴量に分ける
     let path = String::from("./dummy.csv");
     let (y, mat_x) = load_csv(path);
@@ -30,7 +34,25 @@ fn main() {
     println!("loss={}", regression.loss(&w));
     //println!("g={:?}", &g);
     println!("|g|={}", la::norm_l2(&g));
-    regression.train();
+    //regression.train();
+
+    let init_param = Array1::<f64>::zeros(regression.n);
+    let init_hessian: Array2<f64> = Array2::eye(regression.n);
+
+    let linesearch = MoreThuenteLineSearch::new().with_c(1e-4, 0.9)?;
+    let solver = BFGS::new(linesearch);
+
+    let res = Executor::new(regression, solver)
+        .configure(|state| {
+            state
+                .param(init_param)
+                .inv_hessian(init_hessian)
+                .max_iters(60)
+        })
+        .add_observer(SlogLogger::term(), ObserverMode::Always)
+        .run()?;
+
+    Ok(())
 }
 
 fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
@@ -227,6 +249,54 @@ impl Regression {
         } else {
             false
         }
+    }
+}
+
+impl CostFunction for Regression {
+    type Param = Array1<f64>;
+    type Output = f64;
+
+    fn cost(&self, p: &Self::Param) -> Result<Self::Output, Error> {
+        let mut sum = 0.0;
+
+        for i in 0..self.l {
+            let mut wx = 0.0;
+            for j in 0..self.n {
+                wx += p[j] * self.features[[i, j]];
+            }
+            let yi = f64::from(self.y[i]);
+            sum += f64::ln(1.0 + f64::exp(wx)) - yi * wx;
+        }
+
+        Ok(sum)
+    }
+}
+
+impl Gradient for Regression {
+    type Param = Array1<f64>;
+    type Gradient = Array1<f64>;
+
+    fn gradient(&self, p: &Self::Param) -> Result<Self::Gradient, Error> {
+        let mut g = Array1::zeros(self.n);
+        //for i in 0..g.len() {
+        //    g[i] = 0.0;
+        //}
+        for i in 0..self.l {
+            let mut wx = 0.0;
+            for j in 0..self.n {
+                // todo: modify features as parameter.
+                wx += p[j] * self.features[[i, j]];
+            }
+
+            let yi = f64::from(self.y[i]);
+
+            for j in 0..self.n {
+                let p = 1.0 / (1.0 + f64::exp(-wx));
+                //g[j] += -yi * self.features[[i, j]] / (1.0 + f64::exp(yi * wx));
+                g[j] += self.features[[i, j]] * (p - yi);
+            }
+        }
+        Ok(g)
     }
 }
 
