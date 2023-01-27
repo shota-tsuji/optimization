@@ -28,9 +28,6 @@ fn main() {
     }
 
     let mut logistic = Logistic::new(y_bin, mat_x.clone());
-    let w: Array1<f64> = Array1::zeros(logistic.n);
-    let mut g: Array1<f64> = Array1::zeros(logistic.n);
-
     let mut regression = Regression {};
     regression.train(logistic);
 }
