@@ -1,6 +1,7 @@
 use argmin::core::observers::{ObserverMode, SlogLogger};
 use argmin::core::{CostFunction, Error, Executor, Gradient};
-use argmin::solver::linesearch::MoreThuenteLineSearch;
+use argmin::solver::linesearch::condition::StrongWolfeCondition;
+use argmin::solver::linesearch::HagerZhangLineSearch;
 use argmin::solver::quasinewton::BFGS;
 use optimization::linear_algebra as la;
 
@@ -39,7 +40,7 @@ fn main() -> Result<(), Error> {
     let init_param = Array1::<f64>::zeros(regression.n);
     let init_hessian: Array2<f64> = Array2::eye(regression.n);
 
-    let linesearch = MoreThuenteLineSearch::new().with_c(1e-4, 0.9)?;
+    let linesearch = HagerZhangLineSearch::new();
     let solver = BFGS::new(linesearch);
 
     let res = Executor::new(regression, solver)
@@ -52,6 +53,9 @@ fn main() -> Result<(), Error> {
         .add_observer(SlogLogger::term(), ObserverMode::Always)
         .run()?;
 
+    std::thread::sleep(std::time::Duration::from_secs(1));
+
+    println!("{res}");
     Ok(())
 }
 
