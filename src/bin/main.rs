@@ -8,7 +8,7 @@ use optimization::linear_algebra as la;
 use ndarray::{Array, Array1, Array2};
 use std::process;
 
-fn main() -> Result<(), Error> {
+fn main() {
     // ラベルと特徴量に分ける
     let path = String::from("./dummy.csv");
     let (y, mat_x) = load_csv(path);
@@ -27,30 +27,12 @@ fn main() -> Result<(), Error> {
         y_bin[i] = 0;
     }
 
-    let mut regression = Regression::new(y_bin, mat_x.clone());
-    let w: Array1<f64> = Array1::zeros(regression.n);
-    let mut g: Array1<f64> = Array1::zeros(regression.n);
+    let mut logistic = Logistic::new(y_bin, mat_x.clone());
+    let w: Array1<f64> = Array1::zeros(logistic.n);
+    let mut g: Array1<f64> = Array1::zeros(logistic.n);
 
-    let init_param = Array1::<f64>::zeros(regression.n);
-    let init_hessian: Array2<f64> = Array2::eye(regression.n);
-
-    let linesearch = HagerZhangLineSearch::new();
-    let solver = BFGS::new(linesearch);
-
-    let res = Executor::new(regression, solver)
-        .configure(|state| {
-            state
-                .param(init_param)
-                .inv_hessian(init_hessian)
-                .max_iters(60)
-        })
-        .add_observer(SlogLogger::term(), ObserverMode::Always)
-        .run()?;
-
-    std::thread::sleep(std::time::Duration::from_secs(1));
-
-    println!("{res}");
-    Ok(())
+    let mut regression = Regression {};
+    regression.train(logistic);
 }
 
 fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
@@ -81,7 +63,7 @@ fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
     (y, features)
 }
 
-struct Regression {
+struct Logistic {
     y: Array1<i8>,
     features: Array2<f64>,
     // number of feature parameters
@@ -92,13 +74,13 @@ struct Regression {
     num_quasi_newton: i64,
 }
 
-impl Regression {
-    fn new(y: Array1<i8>, features: Array2<f64>) -> Regression {
+impl Logistic {
+    fn new(y: Array1<i8>, features: Array2<f64>) -> Logistic {
         let l = y.len();
         let n = features.shape()[1];
         let num_newton_step = 0;
         let num_quasi_newton = 0;
-        Regression {
+        Logistic {
             y,
             features,
             n,
@@ -109,7 +91,7 @@ impl Regression {
     }
 }
 
-impl CostFunction for Regression {
+impl CostFunction for Logistic {
     type Param = Array1<f64>;
     type Output = f64;
 
@@ -129,7 +111,7 @@ impl CostFunction for Regression {
     }
 }
 
-impl Gradient for Regression {
+impl Gradient for Logistic {
     type Param = Array1<f64>;
     type Gradient = Array1<f64>;
 
@@ -157,6 +139,33 @@ impl Gradient for Regression {
     }
 }
 
+struct Regression {}
+
+impl Regression {
+    fn train(&mut self, logistic: Logistic) -> Result<(), Error> {
+        let init_param = Array1::<f64>::zeros(logistic.n);
+        let init_hessian = Array2::<f64>::eye(logistic.n);
+
+        let linesearch = HagerZhangLineSearch::new();
+        let solver = BFGS::new(linesearch);
+
+        let res = Executor::new(logistic, solver)
+            .configure(|state| {
+                state
+                    .param(init_param)
+                    .inv_hessian(init_hessian)
+                    .max_iters(60)
+            })
+            .add_observer(SlogLogger::term(), ObserverMode::Always)
+            .run()?;
+
+        std::thread::sleep(std::time::Duration::from_secs(1));
+
+        println!("{res}");
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -169,7 +178,7 @@ mod tests {
         let n = 1;
         let y = Array::zeros(l);
         let features = Array::zeros((l, n));
-        let regression = Regression::new(y, features.clone());
+        let regression = Logistic::new(y, features.clone());
         let w = Array1::<f64>::zeros(n);
         assert_eq!(6.931471805599453, regression.cost(&w).unwrap());
     }
@@ -180,7 +189,7 @@ mod tests {
         let n = 2;
         let y = arr1(&[-1, -1]);
         let features = arr2(&[[1.0, 0.0], [1.0, 0.0]]);
-        let regression = Regression::new(y, features);
+        let regression = Logistic::new(y, features);
         let w = Array1::<f64>::zeros(n);
 
         assert_eq!(arr1(&[3.0, 0.0]), regression.gradient(&w).unwrap());
