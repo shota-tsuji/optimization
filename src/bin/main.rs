@@ -3,12 +3,14 @@ use argmin::core::{CostFunction, Error, Executor, Gradient};
 use argmin::solver::linesearch::HagerZhangLineSearch;
 use argmin::solver::quasinewton::BFGS;
 
-use ndarray::{Array, Array1, Array2};
+use ndarray::{Array1, Array2};
+
+use optimization::utils;
 
 fn main() {
     // divide to labels and samples
     let path = String::from("./dummy.csv");
-    let (y, mat_x) = load_csv(path);
+    let (y, mat_x) = utils::load_csv(path);
     // unique
     // index array for value == -1
     let y_nega_idx: Vec<usize> = y
@@ -27,33 +29,6 @@ fn main() {
     let logistic = Logistic::new(y_bin, mat_x.clone());
     let mut regression = Regression {};
     regression.train(logistic);
-}
-
-fn load_csv(path: String) -> (Array1<i8>, Array2<f64>) {
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .from_path(&path)
-        .unwrap();
-    let n = rdr.records().count();
-    let mut y = Array::zeros(n);
-    let mut features = Array::zeros((n, 123));
-
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .from_path(&path)
-        .unwrap();
-    for (i, record) in rdr.records().enumerate() {
-        let record = record.unwrap();
-        y[i] = record[0].parse::<i8>().unwrap();
-        for (j, data) in record.iter().enumerate() {
-            if j > 0 {
-                let index = data.parse::<usize>().unwrap() - 1;
-                features[[i, index]] = 1.0;
-            }
-        }
-    }
-
-    (y, features)
 }
 
 struct Logistic {
@@ -146,7 +121,7 @@ impl Regression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::{arr1, arr2};
+    use ndarray::{arr1, arr2, Array};
 
     #[test]
     fn new() {
