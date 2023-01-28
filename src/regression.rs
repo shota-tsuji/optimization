@@ -12,19 +12,13 @@ pub struct Regression {}
 
 impl Regression {
     pub fn train(&mut self, logistic: Logistic) -> Result<(), Error> {
-        let init_param = Array1::<f64>::zeros(logistic.n);
-        let init_hessian = Array2::<f64>::eye(logistic.n);
+        let w0 = Array1::<f64>::zeros(logistic.n);
+        let h_inv = Array2::<f64>::eye(logistic.n);
 
-        let linesearch = HagerZhangLineSearch::new();
-        let solver = BFGS::new(linesearch);
+        let solver = BFGS::new(HagerZhangLineSearch::new());
 
         let res = Executor::new(logistic, solver)
-            .configure(|state| {
-                state
-                    .param(init_param)
-                    .inv_hessian(init_hessian)
-                    .max_iters(60)
-            })
+            .configure(|state| state.param(w0).inv_hessian(h_inv).max_iters(60))
             .add_observer(SlogLogger::term(), ObserverMode::Always)
             .run()?;
 
