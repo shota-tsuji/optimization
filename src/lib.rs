@@ -6,4 +6,5 @@ pub mod linear_algebra;
 pub mod lu_decomposition;
 pub mod newton;
 pub mod quasi_newton;
+pub mod regression;
 pub mod utils;
