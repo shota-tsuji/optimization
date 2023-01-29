@@ -5,23 +5,19 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+gauss-seidel = []
+slog-logger = ["slog", "slog-term", "slog-async"]
+
 [[bin]]
 name = "logistic"
 path = "src/bin/main.rs"
-
-[[bin]]
-name = "example"
-path = "src/bin/example.rs"
 required-features = ["argmin-math/ndarray_latest-serde", "slog-logger"]
 
 [lib]
 name = "optimization"
 path = "src/lib.rs"
-
-[features]
-default = []
-gauss-seidel = []
-slog-logger = ["slog", "slog-term", "slog-async"]
 
 [dependencies]
 ndarray = "0.15.6"
