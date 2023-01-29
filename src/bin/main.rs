@@ -25,5 +25,7 @@ fn main() {
 
     let logistic = lg::Logistic::new(y_bin, mat_x.clone());
     let mut regression = Regression {};
-    regression.train(logistic);
+    if let Ok(state) = regression.train(logistic) {
+        println!("{:#?}", state.termination_reason);
+    }
 }
